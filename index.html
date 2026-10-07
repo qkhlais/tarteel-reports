@@ -1,0 +1,942 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="منصة التقارير الشهرية لأقسام جمعية تحفيظ القرآن الكريم بمحافظة خليص (ترتيل)">
+<style>html,body{margin:0;height:auto}img{max-width:100%}[hidden]{display:none!important}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}</style>
+<title>منصة تقارير ترتيل</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Reem+Kufi:wght@500;600;700&display=swap">
+<style>
+/* Layout: RTL app shell — sticky header, section rail on the right (desktop) / scroll strip (phone), work area + suggestions panel. Department sets the accent. */
+:root{
+  --paper:#f7f4ef; --surface:#fffdfa; --sunk:#efe9e0; --line:#e0d6c8;
+  --ink:#2b231c; --muted:#7a6c5e;
+  --accent:#6b4a33; --accent-ink:#ffffff; --accent-soft:#f1e6da; --gold:#b08a4a;
+  --ok:#2f7a4f; --ok-soft:#e1f1e7; --warn:#a8641b; --warn-soft:#f8ead7;
+  --f-display:"Reem Kufi","IBM Plex Sans Arabic",Tahoma,sans-serif;
+  --f-body:"IBM Plex Sans Arabic",Tahoma,"Segoe UI",sans-serif;
+  --f-verse:"Amiri","Traditional Arabic",serif;
+  --r:10px;
+}
+[data-dept="media"]{ --accent:#13706f; --accent-soft:#dcefee; --gold:#5aa6a2; }
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#191512; --surface:#221d19; --sunk:#2b2520; --line:#3b332c;
+    --ink:#efe7dd; --muted:#b0a291;
+    --accent:#d0a27c; --accent-ink:#1d1611; --accent-soft:#3a2c21; --gold:#d6b37a;
+    --ok:#7fcf9f; --ok-soft:#1f3328; --warn:#e3a660; --warn-soft:#3a2a18;
+    color-scheme:dark;
+  }
+  :root:not([data-theme="light"]) [data-dept="media"]{ --accent:#6fcfc8; --accent-soft:#183634; --gold:#7cc4bf; }
+}
+:root[data-theme="dark"]{
+  --paper:#191512; --surface:#221d19; --sunk:#2b2520; --line:#3b332c;
+  --ink:#efe7dd; --muted:#b0a291;
+  --accent:#d0a27c; --accent-ink:#1d1611; --accent-soft:#3a2c21; --gold:#d6b37a;
+  --ok:#7fcf9f; --ok-soft:#1f3328; --warn:#e3a660; --warn-soft:#3a2a18;
+  color-scheme:dark;
+}
+:root[data-theme="dark"] [data-dept="media"]{ --accent:#6fcfc8; --accent-soft:#183634; --gold:#7cc4bf; }
+
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.7;direction:rtl}
+#app{min-height:100%;background:var(--paper);color:var(--ink)}
+*{box-sizing:border-box}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.num{font-variant-numeric:tabular-nums}
+
+/* Header */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--surface);border-bottom:1px solid var(--line)}
+.top-in{max-width:1240px;margin:0 auto;padding-block:10px;padding-inline:16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:inherit}
+.brand-mark{font-family:var(--f-display);font-size:26px;color:var(--accent);line-height:1}
+.brand-txt{display:flex;flex-direction:column;line-height:1.3}
+.brand-txt b{font-size:13px}
+.brand-txt span{font-size:11.5px;color:var(--muted)}
+.crumbs{display:flex;gap:6px;align-items:center;font-size:13px;color:var(--muted);flex-wrap:wrap;margin-inline-start:auto}
+.crumbs a{color:var(--accent);text-decoration:none}
+.save{font-size:12.5px;padding:3px 10px;border-radius:999px;background:var(--sunk);color:var(--muted);white-space:nowrap}
+.save.ok{background:var(--ok-soft);color:var(--ok)}
+.save.busy{background:var(--warn-soft);color:var(--warn)}
+
+.wrap{max-width:1240px;margin:0 auto;padding-block:22px 60px;padding-inline:16px}
+.banner{background:var(--warn-soft);color:var(--warn);border-radius:var(--r);padding:10px 14px;font-size:13.5px;margin-bottom:16px}
+
+/* Home */
+.hero{display:grid;grid-template-columns:1fr auto;gap:18px;align-items:end;margin-bottom:22px}
+.hero h1{font-family:var(--f-display);font-weight:600;font-size:clamp(26px,4vw,36px);margin:0;line-height:1.25;text-wrap:balance}
+.hero p{margin:6px 0 0;color:var(--muted);max-width:60ch}
+.lic{font-size:12px;color:var(--muted);border:1px dashed var(--line);border-radius:8px;padding:6px 10px;white-space:nowrap}
+.depts{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+.dept{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:12px;text-decoration:none;color:inherit;transition:border-color .15s, transform .15s}
+.dept:hover{border-color:var(--accent);transform:translateY(-2px)}
+.dept h2{font-family:var(--f-display);font-weight:600;margin:0;font-size:22px;color:var(--accent)}
+.dept .verse{font-family:var(--f-verse);font-size:17px;line-height:1.9;color:var(--ink);border-inline-start:3px solid var(--gold);padding-inline-start:12px}
+.dept .verse small{display:block;font-family:var(--f-body);font-size:11.5px;color:var(--muted)}
+.dept .meta{display:flex;justify-content:space-between;font-size:13px;color:var(--muted)}
+.dept .go{align-self:flex-start;background:var(--accent);color:var(--accent-ink);border-radius:8px;padding:7px 16px;font-weight:600;font-size:14px}
+.h3{font-family:var(--f-display);font-weight:600;font-size:19px;margin:30px 0 12px}
+.arch{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.arch-row{display:grid;grid-template-columns:1.3fr 1fr 1fr auto;gap:10px;align-items:center;padding:11px 16px;border-top:1px solid var(--line);font-size:14px}
+.arch-row:first-child{border-top:0}
+.arch-row.head{background:var(--sunk);font-size:12.5px;color:var(--muted);font-weight:600}
+.arch-empty{padding:22px 16px;color:var(--muted);font-size:14px}
+.bar{height:6px;border-radius:9px;background:var(--sunk);overflow:hidden;min-width:60px}
+.bar i{display:block;height:100%;background:var(--accent)}
+
+/* Dept start */
+.start{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:22px;display:grid;gap:16px;max-width:720px}
+.start h1{font-family:var(--f-display);font-weight:600;font-size:28px;margin:0;color:var(--accent)}
+.row{display:flex;gap:12px;flex-wrap:wrap}
+.row > *{flex:1 1 160px;min-width:0}
+
+/* Shell */
+.shell{display:grid;grid-template-columns:230px minmax(0,1fr) 290px;gap:20px;align-items:start}
+.rail{position:sticky;top:calc(env(safe-area-inset-top,0px) + 76px);background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:8px}
+.rail-h{padding:8px 10px 10px;border-bottom:1px solid var(--line);margin-bottom:6px}
+.rail-h b{font-family:var(--f-display);color:var(--accent);font-size:17px;font-weight:600;display:block}
+.rail-h span{font-size:12.5px;color:var(--muted)}
+.rail a{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;text-decoration:none;color:var(--ink);font-size:14px}
+.rail a:hover{background:var(--sunk)}
+.rail a.on{background:var(--accent-soft);color:var(--accent);font-weight:600}
+.dot{flex:none;width:22px;height:22px;border-radius:6px;display:grid;place-items:center;font-size:12px;background:var(--sunk);color:var(--muted);font-weight:600}
+.done .dot{background:var(--ok-soft);color:var(--ok)}
+.part .dot{background:var(--warn-soft);color:var(--warn)}
+.on .dot{background:var(--accent);color:var(--accent-ink)}
+.rail .sep{border-top:1px solid var(--line);margin:6px 4px}
+
+.main{min-width:0}
+.sec-head{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+.sec-no{width:38px;height:38px;border-radius:10px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font-family:var(--f-display);font-size:19px;flex:none}
+.sec-head h1{font-family:var(--f-display);font-weight:600;font-size:clamp(22px,3vw,28px);margin:0;line-height:1.3}
+.sec-sub{color:var(--muted);margin:0 0 18px;font-size:14px;max-width:62ch}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px}
+
+label.f{display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:600;color:var(--muted)}
+.inp{width:100%;background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:9px 11px;font-size:15px;color:var(--ink);min-width:0}
+.inp:focus{border-color:var(--accent);outline:none;box-shadow:0 0 0 3px var(--accent-soft)}
+textarea.inp{resize:vertical;min-height:44px;line-height:1.6}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px}
+
+/* KPIs */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:8px}
+.kpi .k-l{font-weight:600;font-size:14px}
+.kpi .k-h{font-size:12px;color:var(--muted);line-height:1.5}
+.kpi .inp{font-size:20px;font-weight:600;text-align:center}
+.kpi .unit{font-size:12px;color:var(--muted);text-align:center}
+.sugg-btn{border:1px dashed var(--accent);background:var(--accent-soft);color:var(--accent);border-radius:8px;padding:5px 9px;font-size:12.5px;cursor:pointer;text-align:center}
+.sugg-btn:hover{background:var(--accent);color:var(--accent-ink)}
+
+/* Tables */
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:640px}
+th{background:var(--accent);color:var(--accent-ink);font-weight:600;font-size:13px;padding:9px 8px;text-align:start;white-space:nowrap}
+th small{display:block;font-weight:400;opacity:.85;font-size:11px}
+td{border-top:1px solid var(--line);padding:5px;vertical-align:top}
+td.m{width:38px;text-align:center;color:var(--muted);font-size:13px;padding-top:12px}
+td .inp{border-color:transparent;background:transparent;padding:7px 8px;font-size:14px}
+td .inp:focus{background:var(--paper);border-color:var(--accent)}
+td.fixed{font-weight:600;font-size:14px;padding:12px 8px;white-space:nowrap}
+tr.total td{background:var(--sunk);font-weight:700;padding:11px 8px}
+.del{border:0;background:none;color:var(--muted);cursor:pointer;font-size:18px;padding:6px;line-height:1}
+.del:hover{color:var(--warn)}
+.tools{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:8px 14px;cursor:pointer;font-size:14px;font-weight:500}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
+.btn.pri:hover{filter:brightness(1.08);color:var(--accent-ink)}
+.btn.ai{border-style:dashed;border-color:var(--accent);color:var(--accent)}
+.btn[disabled]{opacity:.55;cursor:wait}
+
+/* Lists */
+.lst{display:grid;gap:10px}
+.lst-row{display:grid;grid-template-columns:30px minmax(0,1fr) auto;gap:8px;align-items:start}
+.lst-row .n{width:30px;height:30px;border-radius:8px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;font-weight:700;font-size:13px;margin-top:5px}
+
+/* Checks */
+.checks{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.chk{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px;cursor:pointer;font-size:15px}
+.chk input{width:18px;height:18px;accent-color:var(--accent)}
+.chk:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}
+
+/* Side panel */
+.side{position:sticky;top:calc(env(safe-area-inset-top,0px) + 76px);display:grid;gap:12px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px}
+.panel h4{margin:0 0 4px;font-size:14px;font-family:var(--f-display);font-weight:600;color:var(--accent)}
+.panel p{margin:0;font-size:13px;color:var(--muted);line-height:1.65}
+.tips{margin:0;padding-inline-start:18px;font-size:13px;color:var(--muted);display:grid;gap:4px}
+.chips-g{margin-top:10px}
+.chips-g > b{display:block;font-size:12px;color:var(--muted);margin-bottom:6px;font-weight:600}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:var(--paper);border-radius:999px;padding:4px 11px;font-size:13px;cursor:pointer;text-align:start;line-height:1.5}
+.chip:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+.chip.ai{border-style:dashed;border-color:var(--gold)}
+.ai-note{font-size:12px;color:var(--muted);margin-top:8px}
+
+.nav{display:flex;justify-content:space-between;gap:10px;margin-top:22px;flex-wrap:wrap}
+.nav a{text-decoration:none}
+
+/* Report view */
+.rep{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.rep-top{background:var(--accent-soft);padding:20px 22px;display:grid;grid-template-columns:1fr auto;gap:14px;align-items:center;border-bottom:3px solid var(--accent)}
+.rep-top h1{font-family:var(--f-display);font-weight:700;margin:0;font-size:28px;color:var(--accent)}
+.rep-top .tag{display:inline-block;background:var(--accent);color:var(--accent-ink);border-radius:999px;padding:2px 14px;font-weight:600;font-size:15px;margin-top:4px}
+.rep-top .verse{font-family:var(--f-verse);font-size:16px;text-align:center;line-height:1.9;max-width:280px}
+.rep-top .verse small{display:block;font-family:var(--f-body);font-size:11px;color:var(--muted)}
+.rep-body{padding:18px 22px;display:grid;gap:18px}
+.rep-sec h2{font-size:16px;margin:0 0 8px;display:flex;align-items:center;gap:8px;font-family:var(--f-display);font-weight:600}
+.rep-sec h2 i{font-style:normal;background:var(--accent);color:var(--accent-ink);width:24px;height:24px;border-radius:6px;display:grid;place-items:center;font-size:13px}
+.rep-kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
+.rep-kv div{background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:13px;color:var(--muted)}
+.rep-kv div b{display:block;color:var(--ink);font-size:17px}
+.rep table{min-width:520px}
+.rep td{padding:7px 8px;font-size:13.5px}
+.rep ol{margin:0;padding-inline-start:22px;display:grid;gap:3px}
+.empty{color:var(--muted);font-size:13px}
+.sig{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.sig div{border:1px solid var(--line);border-radius:10px;padding:12px;font-size:13.5px}
+.sig b{display:block;color:var(--accent);margin-bottom:4px}
+
+.toast{position:fixed;bottom:calc(18px + env(safe-area-inset-bottom,0px));inset-inline-start:50%;transform:translateX(50%);background:var(--ink);color:var(--paper);padding:9px 18px;border-radius:999px;font-size:14px;z-index:50}
+
+@media (max-width:1080px){
+  .shell{grid-template-columns:210px minmax(0,1fr)}
+  .side{grid-column:2;position:static}
+}
+@media (max-width:760px){
+  .shell{grid-template-columns:minmax(0,1fr)}
+  .side{grid-column:1}
+  .rail{position:static;display:flex;overflow-x:auto;gap:4px;padding:6px}
+  .rail-h,.rail .sep{display:none}
+  .rail a{flex:none;white-space:nowrap;font-size:13px;padding:6px 10px}
+  .hero{grid-template-columns:1fr}
+  .arch-row{grid-template-columns:1fr auto}
+  .arch-row .hide-s{display:none}
+  .rep-top{grid-template-columns:1fr}
+  .sig{grid-template-columns:1fr}
+  .brand-txt span{display:none}
+}
+
+/* ===== A4 print sheet (paper: fixed light colors by design) ===== */
+.pp-host{position:fixed;top:0;left:0;z-index:-1;pointer-events:none;direction:rtl}
+.pp{width:794px;height:1123px;background:#ffffff;color:#2b231c;font-family:"IBM Plex Sans Arabic",Tahoma,sans-serif;font-size:12px;line-height:1.6;position:relative;overflow:hidden;--pa:#6b4a33;--ps:#f3ebe1;--pg:#b08a4a;--pl:#e2d7ca}
+.pp.media{--pa:#13706f;--ps:#e3f1f0;--pg:#5aa6a2;--pl:#cfe2e1}
+.pp-in{position:absolute;inset:0;padding:28px 30px 54px;display:flex;flex-direction:column;gap:12px}
+.pp-head{display:grid;grid-template-columns:150px 1fr 190px;align-items:center;gap:12px;background:var(--ps);border-radius:14px;padding:14px 18px;border-bottom:4px solid var(--pa)}
+.pp-logo{font-family:"Reem Kufi",Tahoma,sans-serif;font-size:40px;color:var(--pa);line-height:1;text-align:center}
+.pp-logo small{display:block;font-family:"IBM Plex Sans Arabic",Tahoma,sans-serif;font-size:10px;color:#6f6255;margin-top:6px;line-height:1.5}
+.pp-title{text-align:center}
+.pp-title h1{margin:0;font-family:"Reem Kufi",Tahoma,sans-serif;font-size:30px;color:#2b231c;line-height:1.3}
+.pp-title .tag{display:inline-block;background:var(--pa);color:#fff;border-radius:999px;padding:2px 22px;font-size:16px;font-weight:700;margin:4px 0}
+.pp-title div{color:#6f6255;font-size:13px}
+.pp-verse{font-family:"Amiri","Traditional Arabic",serif;font-size:15px;line-height:1.9;text-align:center;color:#2b231c}
+.pp-verse small{display:block;font-family:"IBM Plex Sans Arabic",Tahoma,sans-serif;font-size:10px;color:#6f6255}
+.pp-sec{border:1px solid var(--pl);border-radius:10px;overflow:hidden}
+.pp-sh{display:flex;align-items:center;gap:8px;background:var(--pa);color:#fff;padding:5px 12px;font-weight:700;font-size:13.5px}
+.pp-sh b{background:#fff;color:var(--pa);width:20px;height:20px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;font-size:12px}
+.pp-sb{padding:8px 10px}
+.pp-kv{display:flex;flex-wrap:wrap;gap:6px 18px}
+.pp-kv span{color:#6f6255}
+.pp-kv b{color:#2b231c;font-weight:700;border-bottom:1px dotted #b9ab9a;padding:0 6px;min-width:90px;display:inline-block}
+.pp-kpis{display:flex;gap:6px}
+.pp-kpi{flex:1;border:1px solid var(--pl);border-radius:8px;text-align:center;padding:6px 4px;background:#fff}
+.pp-kpi div{font-size:10.5px;color:#6f6255;line-height:1.4;min-height:30px}
+.pp-kpi b{display:block;font-size:16px;color:var(--pa);margin-top:2px}
+.pp table{width:100%;border-collapse:collapse;min-width:0}
+.pp th{background:var(--ps);color:#2b231c;font-size:11px;font-weight:700;padding:5px 6px;border:1px solid var(--pl);text-align:right;white-space:normal}
+.pp td{border:1px solid var(--pl);padding:4px 6px;font-size:11.5px;height:24px;vertical-align:middle}
+.pp td.m{width:26px;text-align:center;color:#6f6255}
+.pp tr.t td{background:var(--ps);font-weight:700}
+.pp ol{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:4px}
+.pp ol li{display:flex;gap:8px;align-items:baseline;border-bottom:1px dotted #b9ab9a;padding-bottom:3px;min-height:22px}
+.pp ol li i{font-style:normal;background:var(--ps);color:var(--pa);font-weight:700;border-radius:4px;min-width:18px;text-align:center;font-size:11px}
+.pp-chks{display:flex;flex-wrap:wrap;gap:6px 20px}
+.pp-chks span{display:inline-flex;gap:6px;align-items:center}
+.pp-chks em{font-style:normal;width:14px;height:14px;border:1.5px solid var(--pa);border-radius:3px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;color:var(--pa);line-height:1}
+.pp-sig{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.pp-sig div{border:1px solid var(--pl);border-radius:10px;padding:8px 14px;line-height:2.1}
+.pp-sig div b{display:block;color:var(--pa);font-size:13px;text-align:center;line-height:1.6}
+.pp-foot{position:absolute;bottom:18px;left:30px;right:30px;display:flex;justify-content:space-between;font-size:10px;color:#8a7c6d;border-top:1px solid var(--pl);padding-top:6px}
+@page{size:A4;margin:0}
+@media print{ body > *:not(.pp-host){display:none!important} .pp-host{position:static;z-index:auto} .pp{break-after:page;-webkit-print-color-adjust:exact;print-color-adjust:exact} .pp:last-child{break-after:auto} }
+.pdf-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:0 0 14px}
+.pdf-msg{font-size:13px;color:var(--muted)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<div id="app" dir="rtl" lang="ar"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<script>
+(() => {
+/* ================= Config ================= */
+const ASSOC = "جمعية تحفيظ القرآن الكريم بمحافظة خليص (ترتيل)";
+const ASSOC_CTX = "جمعية خيرية لتحفيظ القرآن الكريم بمحافظة خليص بمنطقة مكة المكرمة، اسمها ترتيل، تخصصها تعليم القرآن في القرى والهجر، مصرحة من المركز الوطني لتنمية القطاع غير الربحي برقم 3362.";
+const HIJRI = ["محرم","صفر","ربيع الأول","ربيع الآخر","جمادى الأولى","جمادى الآخرة","رجب","شعبان","رمضان","شوال","ذو القعدة","ذو الحجة"];
+const GREG = ["يناير","فبراير","مارس","أبريل","مايو","يونيو","يوليو","أغسطس","سبتمبر","أكتوبر","نوفمبر","ديسمبر"];
+
+const BASICS = {id:"1", type:"basics", title:"البيانات الأساسية", sub:"بيانات التقرير ومن أعدّه. الشهر والعام يُحدَّدان عند فتح التقرير.",
+  tips:["اكتب الاسم الثلاثي لمعدّ التقرير.","تاريخ الرفع يُقترح تلقائياً بتاريخ اليوم.","التقرير يُرفع عادة خلال أول خمسة أيام من الشهر التالي."]};
+const APPROVE = (mgr) => ({id:"9", type:"approve", title:"الاعتماد", sub:"اسم "+mgr+" واسم المدير التنفيذي وتاريخ الاعتماد. التوقيع يكون على النسخة الورقية.", mgr,
+  tips:["اعتماد المدير التنفيذي يتم بعد مراجعة الأقسام كلها.","استعرض التقرير كاملاً قبل طلب الاعتماد."]});
+
+const DEPTS = {
+ res: {
+  key:"res", dept:"resources", name:"قسم تنمية الموارد", short:"تنمية الموارد", slogan:"شراكات .. عطاء .. أثر مستدام",
+  verse:"وَمَا تُنفِقُوا مِنْ خَيْرٍ يُوَفَّ إِلَيْكُمْ وَأَنتُمْ لَا تُظْلَمُونَ", ref:"البقرة: 272",
+  sections:[
+   BASICS,
+   {id:"2", type:"kpis", title:"مؤشرات تنمية الموارد لهذا الشهر", sub:"الأرقام الرئيسية للشهر. زر الاقتراح يحسب القيمة من الجداول التي عبّأتها.",
+    items:[
+     {k:"target", l:"المستهدف الشهري", u:"ريال", h:"مبلغ الهدف المعتمد في الخطة لهذا الشهر"},
+     {k:"pct", l:"نسبة تحقيق الهدف الشهري", u:"٪", h:"إجمالي التبرعات ÷ المستهدف × 100", calc:d=>{const t=num(g(d,"2.target")), s=revTotal(d); return t>0&&s>0? Math.round(s/t*100):null}},
+     {k:"inits", l:"عدد المبادرات المقدمة", u:"مبادرة", h:"من جدول المبادرات (القسم 3)", calc:d=>countRows(d,"3","name")||null},
+     {k:"opps", l:"عدد الفرص التمويلية", u:"فرصة", h:"المبادرات التي لها قيمة مالية", calc:d=>(g(d,"3.rows")||[]).filter(r=>num(r.value)>0).length||null},
+     {k:"donors", l:"عدد المتبرعين الجدد", u:"متبرع", h:"من سجل المتبرعين أو منصة التبرع"},
+     {k:"total", l:"إجمالي التبرعات", u:"ريال", h:"من جدول الإيرادات (القسم 4)", calc:d=>revTotal(d)||null},
+     {k:"partners", l:"عدد الشراكات الجديدة", u:"شراكة", h:"من جدول الشراكة والداعمين (القسم 5)", calc:d=>countRows(d,"5","name")||null}
+    ],
+    tips:["ابدأ بتعبئة الجداول (3، 4، 5) ثم عُد هنا واضغط «اقتراح» لحساب المؤشرات تلقائياً.","نسبة التحقيق تُحسب بعد إدخال المستهدف الشهري."]},
+   {id:"3", type:"table", title:"أبرز المبادرات والفرص التمويلية", sub:"المبادرات والمشاريع التي قُدّمت لجهات مانحة أو داعمين هذا الشهر.", rows:5,
+    cols:[{k:"name",l:"اسم المبادرة / الفرصة"},{k:"entity",l:"الجهة المستهدفة"},{k:"value",l:"قيمة الفرصة",s:"ريال",t:"number"},{k:"status",l:"حالة الفرصة",t:"select",o:["مستجد","قيد التنفيذ","مكتملة"]}],
+    chips:{name:["كفالة حلقة تحفيظ في قرية","كفالة معلم قرآن","برنامج الحافظ المتقن","مسابقة حفظ القرآن السنوية","تجهيز حلقات الهجر بوسائل تعليمية","النقل للطلاب في القرى البعيدة","برنامج الإجازة بالسند","حقيبة الطالب الحافظ","وقف تعليم القرآن"],
+           entity:["مؤسسة الملك عبدالعزيز (الأوقاف)","منصة إحسان","منصة جود الإسكان","مؤسسة مانحة","شركة (مسؤولية اجتماعية)","فاعل خير","بنك (مسؤولية اجتماعية)","وزارة الشؤون الإسلامية"]},
+    ai:true, tips:["اذكر الفرص التي رُفعت فعلاً، ولو لم يصل الرد.","«مستجد» = رُفعت هذا الشهر، «قيد التنفيذ» = تمت الموافقة وبدأ الصرف."]},
+   {id:"4", type:"table", title:"الإيرادات والتبرعات", sub:"المبالغ المحصّلة فعلياً خلال الشهر حسب النوع. الإجمالي يُحسب تلقائياً.", fixed:["التبرعات العامة","الزكاة","الوقف","الشراكات والدعم المؤسسي","إيرادات أخرى"], total:"amount",
+    cols:[{k:"type",l:"نوع الإيراد",t:"fixed"},{k:"amount",l:"المبلغ",s:"ريال",t:"number"},{k:"notes",l:"ملاحظات"}],
+    chips:{notes:["عبر منصة إحسان","عبر رابط التبرع بالموقع","تحويلات بنكية مباشرة","حملة رمضان","متجر الجمعية الإلكتروني","استقطاع شهري","بموجب اتفاقية الشراكة"]},
+    tips:["أدخل المبلغ المحصّل لا المتعهَّد به.","اكتب في الملاحظات قناة التحصيل؛ يساعد ذلك في المقارنة الشهرية."]},
+   {id:"5", type:"table", title:"الشراكة والداعمين", sub:"الجهات والأفراد الداعمون الجدد أو من جُدّدت شراكتهم هذا الشهر.", rows:5,
+    cols:[{k:"name",l:"اسم الجهة / الداعم"},{k:"kind",l:"نوع الدعم",s:"مالي - عيني - خدمة",t:"select",o:["مالي","عيني","خدمة"]},{k:"notes",l:"ملاحظات"}],
+    chips:{name:["مؤسسة خيرية مانحة","شركة محلية بخليص","فاعل خير","بلدية محافظة خليص","مكتب الدعوة","جمعية البر بخليص"],
+           notes:["شراكة جديدة","تجديد شراكة سنوية","توقيع اتفاقية","دعم لمرة واحدة","رعاية برنامج","مصاحف ووسائل تعليمية","خدمات نقل","تصميم وطباعة"]},
+    ai:true, tips:["سجّل كل داعم في سطر مستقل.","الدعم العيني: مصاحف، أجهزة، مستلزمات. الخدمة: نقل، تصميم، استشارات."]},
+   {id:"6", type:"table", title:"الأنشطة واللقاءات", sub:"الزيارات واللقاءات والفعاليات التي نفّذها القسم.", rows:5,
+    cols:[{k:"name",l:"الفعالية / اللقاء"},{k:"date",l:"التاريخ",t:"date"},{k:"entity",l:"الجهة المستهدفة"},{k:"notes",l:"المخرجات"}],
+    chips:{name:["زيارة جهة مانحة","لقاء مع رجل أعمال","اجتماع لجنة تنمية الموارد","ورشة كتابة المنح","عرض تقديمي لمبادرات الجمعية","زيارة ميدانية مع داعم لحلقات القرى","حفل تكريم الداعمين"],
+           notes:["وعد بدراسة المبادرة","طلب مقترح مكتوب","موافقة مبدئية","توقيع اتفاقية","تعريف بالجمعية"]},
+    ai:true, tips:["اكتب المخرج الفعلي لكل لقاء، ولو كان «تعريف بالجمعية»."]},
+   {id:"7", type:"table", title:"التحديات والملاحظات", sub:"ما واجه القسم هذا الشهر، وما الإجراء الذي اتُّخذ.", rows:4,
+    cols:[{k:"issue",l:"التحدي أو الملاحظة"},{k:"action",l:"الإجراء المتخذ"}],
+    chips:{issue:["تأخر رد الجهات المانحة","ضعف التبرعات في غير المواسم","محدودية الكوادر في القسم","صعوبة الوصول لداعمين جدد","ارتفاع تكلفة النقل لحلقات القرى"],
+           action:["متابعة هاتفية وخطاب تذكير","إطلاق حملة رقمية قصيرة","طلب دعم متطوعين","التواصل مع الغرفة التجارية","تقديم المبادرة لمنصة إحسان"]},
+    ai:true, tips:["لكل تحدٍّ إجراء واضح، حتى لو كان «رُفع للإدارة»."]},
+   {id:"8", type:"list", title:"التوصيات المقترحة", sub:"توصيات القسم للشهر القادم أو للإدارة.", rows:4,
+    chips:["إطلاق حملة تبرع رقمية لكفالة حلقات القرى والهجر","تفعيل الاستقطاع الشهري للمتبرعين","تقديم مبادرة لمنصة إحسان","زيارة ثلاث جهات مانحة جديدة","إعداد تقرير أثر للداعمين الحاليين","تكريم الداعمين في حفل الختام","تطوير ملف تعريفي للجمعية للجهات المانحة"],
+    ai:true, tips:["التوصية الجيدة قابلة للتنفيذ ولها جهة ومدة.","ابنِ التوصيات على التحديات في القسم 7."]},
+   APPROVE("مدير تنمية الموارد")
+  ]
+ },
+ media: {
+  key:"media", dept:"media", name:"قسم الإعلام", short:"الإعلام", slogan:"إعلام مؤثر .. لرسالة أعظم",
+  verse:"وَمَنْ أَحْسَنُ قَوْلًا مِّمَّن دَعَا إِلَى اللَّهِ وَعَمِلَ صَالِحًا وَقَالَ إِنَّنِي مِنَ الْمُسْلِمِينَ", ref:"فصلت: 33",
+  sections:[
+   BASICS,
+   {id:"2", type:"kpis", title:"المؤشرات الرئيسية لهذا الشهر", sub:"أرقام الأداء الإعلامي. زر الاقتراح يجمعها من جدول المنصات.",
+    items:[
+     {k:"content", l:"عدد المحتويات المنتجة", u:"محتوى", h:"مجموع المنشورات في جدول المنصات (القسم 4)", calc:d=>sumCol(d,"4","posts")||null},
+     {k:"views", l:"عدد المشاهدات", u:"مشاهدة", h:"مجموع المشاهدات في جدول المنصات", calc:d=>sumCol(d,"4","views")||null},
+     {k:"interact", l:"عدد التفاعلات", u:"تفاعل", h:"إعجاب + تعليق + مشاركة", calc:d=>sumCol(d,"4","inter")||null},
+     {k:"growth", l:"نسبة النمو", u:"٪", h:"مقارنة المشاهدات بتقرير الشهر السابق المحفوظ", calc:d=>growthCalc(d)},
+     {k:"followers", l:"إجمالي المستفيدين", u:"مستفيد", h:"إجمالي المتابعين على المنصات أو الوصول"}
+    ],
+    tips:["عبّئ جدول المنصات (القسم 4) أولاً، ثم اضغط «اقتراح» هنا.","نسبة النمو تُحسب إذا كان تقرير الشهر السابق محفوظاً في المنصة."]},
+   {id:"3", type:"table", title:"أبرز الأعمال والأنشطة المنفذة", sub:"الأعمال الإعلامية الرئيسية خلال الشهر.", rows:5,
+    cols:[{k:"name",l:"اسم العمل / النشاط"},{k:"date",l:"تاريخ التنفيذ",t:"date"},{k:"target",l:"الفئة المستهدفة"},{k:"result",l:"أبرز النتائج"}],
+    chips:{name:["تغطية حفل تكريم الحفاظ","فيديو تعريفي بحلقات القرى والهجر","حملة رقمية لدعم الحلقات","تصميم هوية مسابقة القرآن","قصة نجاح طالب حافظ","بث مباشر للحفل","إعداد النشرة الشهرية"],
+           target:["المجتمع المحلي بخليص","الداعمون والمانحون","أولياء الأمور","الطلاب والمعلمون","عموم المتابعين"],
+           result:["وصول أكثر من 10 آلاف مشاهدة","زيادة المتابعين","تفاعل واسع من المجتمع","دعم مالي ناتج عن الحملة","نشر في حسابات جهات رسمية"]},
+    ai:true, tips:["قدّم الأعمال الأكثر أثراً.","اكتب النتيجة برقم إن أمكن."]},
+   {id:"4", type:"table", title:"المنصات الإعلامية", sub:"أداء كل منصة خلال الشهر. يمكنك إضافة منصات أخرى.", fixed:["تويتر (X)","الموقع الإلكتروني","تيك توك"], extra:true, total:["posts","views","inter"],
+    cols:[{k:"platform",l:"المنصة",t:"fixed"},{k:"posts",l:"عدد المنشورات",t:"number"},{k:"views",l:"عدد المشاهدات",t:"number"},{k:"inter",l:"التفاعل",t:"number"},{k:"notes",l:"ملاحظات"}],
+    chips:{platform:["سناب شات","إنستقرام","يوتيوب","واتساب (القناة)","تيليجرام"],
+           notes:["أعلى منصة تفاعلاً","انخفاض بسبب قلة النشر","نمو ملحوظ في المتابعين","تحديث صفحة الأخبار","مقطع حقق انتشاراً"]},
+    tips:["الأرقام من لوحة إحصاءات كل منصة لنفس الشهر.","التفاعل = الإعجابات والتعليقات والمشاركات."]},
+   {id:"5", type:"table", title:"التغطيات الإعلامية", sub:"الفعاليات التي غطاها القسم، ونوع التغطية ورابطها.", rows:4,
+    cols:[{k:"event",l:"الحدث / الفعالية"},{k:"date",l:"التاريخ",t:"date"},{k:"kind",l:"نوع التغطية",s:"خبر - صور - فيديو",t:"select",o:["خبر","صور","فيديو","خبر وصور","تغطية شاملة"]},{k:"link",l:"رابط النشر",t:"url"}],
+    chips:{event:["حفل ختام الحلقات","زيارة مسؤول للجمعية","توقيع اتفاقية شراكة","دورة المعلمين","اختبارات الحفاظ","لقاء أولياء الأمور"]},
+    tips:["الصق رابط المنشور الفعلي لتسهيل المراجعة."]},
+   {id:"6", type:"list", title:"أبرز الإنجازات", sub:"إنجازات القسم خلال الشهر بصياغة مختصرة.", rows:5,
+    chips:["إطلاق حساب الجمعية على منصة جديدة","تجاوز المشاهدات حاجز 50 ألف مشاهدة","إنتاج فيديو تعريفي بحلقات القرى والهجر","تغطية جميع فعاليات الشهر","نشر قصص نجاح للطلاب الحفاظ","تحديث محتوى الموقع الإلكتروني"],
+    ai:true, tips:["اكتب الإنجاز بصيغة الفعل الماضي وبرقم إن وجد."]},
+   {id:"7", type:"list", title:"التوصيات المقترحة", sub:"ما يقترحه القسم لتحسين الأداء الإعلامي.", rows:4,
+    chips:["اعتماد خطة محتوى شهرية مسبقة","زيادة المحتوى المرئي القصير","إبراز قصص الحلقات في القرى والهجر","التعاون مع مشاهير محليين في خليص","تخصيص ميزانية للإعلانات الممولة","تدريب متطوعين على التصوير"],
+    ai:true, tips:["اربط التوصية بمؤشر تريد تحسينه."]},
+   {id:"8", type:"checks", title:"احتياجات القسم", sub:"ما يحتاجه القسم لتحسين عمله. اختر ما ينطبق واكتب التفاصيل.",
+    opts:["دعم مالي","تجهيزات تقنية","تدريب وتأهيل","برامج وتطبيقات","موارد بشرية"],
+    chips:["كاميرا وميكروفون لاسلكي","اشتراك برنامج تصميم","مصمم متعاون","دورة في التصوير بالجوال","ميزانية إعلانات ممولة"],
+    tips:["حدّد الاحتياج بدقة (مثلاً: ميكروفون لاسلكي) بدل «تجهيزات»."]},
+   APPROVE("مدير قسم الإعلام")
+  ]
+ }
+};
+
+/* ================= Helpers ================= */
+const $ = (s,r=document)=>r.querySelector(s);
+const esc = s => String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const num = v => { if(v==null||v==="") return 0; const n=parseFloat(String(v).replace(/[٠-٩]/g,d=>"٠١٢٣٤٥٦٧٨٩".indexOf(d)).replace(/[,٬\s]/g,"")); return isNaN(n)?0:n; };
+const fmt = n => Number(n).toLocaleString("ar-SA-u-nu-latn");
+function g(d,path){ return path.split(".").reduce((o,k)=>o==null?undefined:o[k], d); }
+function countRows(d,sid,k){ return (g(d,sid+".rows")||[]).filter(r=>r&&String(r[k]||"").trim()).length; }
+function sumCol(d,sid,k){ return (g(d,sid+".rows")||[]).reduce((a,r)=>a+num(r&&r[k]),0); }
+function revTotal(d){ return sumCol(d,"4","amount"); }
+function growthCalc(d){
+  if(!cur) return null;
+  const pk = prevKey(cur); const p = pk && reportsCache[pk]; if(!p) return null;
+  const prev = num(g(p.data||{},"2.views")) || sumCol(p.data||{},"4","views");
+  const now = num(g(d,"2.views")) || sumCol(d,"4","views");
+  if(!prev||!now) return null; return Math.round((now-prev)/prev*1000)/10;
+}
+function hijriNow(){
+  try{ const p=new Intl.DateTimeFormat("en-u-ca-islamic-umalqura-nu-latn",{year:"numeric",month:"numeric"}).formatToParts(new Date());
+    return {y:parseInt(p.find(x=>x.type==="year").value), m:parseInt(p.find(x=>x.type==="month").value)}; }catch(e){ return {y:1448,m:4}; }
+}
+function todayISO(){ const d=new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+const monthName = (cal,m)=> (cal==="g"?GREG:HIJRI)[m-1]||"";
+const repKey = (dk,cal,y,m)=> `${dk}_${cal}_${y}_${String(m).padStart(2,"0")}`;
+function parseKey(k){ const [dk,cal,y,m]=k.split("_"); return {dk,cal,y:+y,m:+m}; }
+function prevKey(c){ let y=c.y, m=c.m-1; if(m<1){m=12;y--;} return repKey(c.dk,c.cal,y,m); }
+function toast(t){ const el=document.createElement("div"); el.className="toast"; el.textContent=t; document.body.appendChild(el); setTimeout(()=>el.remove(),2200); }
+const ls = { get(k){ try{return JSON.parse(localStorage.getItem(k));}catch(e){return null} }, set(k,v){ try{localStorage.setItem(k,JSON.stringify(v));}catch(e){} } };
+
+/* ================= State & storage ================= */
+let db=null, sample=null, user=null, downloads=null, dbTried=false;
+let reportsCache = {};            // key -> {key, dept, cal, y, m, data, pct, updatedAt}
+let cur = null;                   // {dk, cal, y, m, key}
+let curData = {};
+let saveTimer=null, saving=false, pendingSave=false, saveState="idle";
+
+function completion(dk, d){
+  const secs = DEPTS[dk].sections; let done=0;
+  secs.forEach(s=>{ if(secStatus(s,d)==="done") done++; });
+  return Math.round(done/secs.length*100);
+}
+function secStatus(s,d){
+  const v = d[s.id]||{};
+  if(s.type==="basics"){ const f=["preparer","submitted"].filter(k=>String(v[k]||"").trim()).length; return f===2?"done":f?"part":""; }
+  if(s.type==="kpis"){ const f=s.items.filter(i=>String(v[i.k]??"").trim()!=="").length; return f===s.items.length?"done":f?"part":""; }
+  if(s.type==="table"){ const rows=(v.rows||[]); const k=s.total? (Array.isArray(s.total)?s.total[0]:s.total) : s.cols[0].k; const f=rows.filter(r=>r&&String(r[k]||"").trim()).length; return f>=1? (s.fixed? (f>=Math.min(2,s.fixed.length)?"done":"part") : "done"):""; }
+  if(s.type==="list"){ const f=(v.items||[]).filter(x=>String(x||"").trim()).length; return f>=2?"done":f?"part":""; }
+  if(s.type==="checks"){ return (v.sel||[]).length||String(v.other||"").trim()?"done":""; }
+  if(s.type==="approve"){ const f=["mgr","exec"].filter(k=>String(v[k]||"").trim()).length; return f===2?"done":f?"part":""; }
+  return "";
+}
+
+async function initCaps(){ dbTried=true; loadLocal(); render(); }
+function loadLocal(){ reportsCache = ls.get("tarteel_reports")||{}; }
+
+function scheduleSave(){
+  saveState="busy"; paintSave();
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(()=>{ saveTimer=null; doSave(); }, 900);
+}
+async function doSave(){
+  if(!cur) return;
+  if(saving){ pendingSave=true; return; }
+  saving=true;
+  const body = {dept:cur.dk, cal:cur.cal, y:cur.y, m:cur.m, data:JSON.parse(JSON.stringify(curData)), pct:completion(cur.dk,curData), updatedAt:Date.now()};
+  try{
+    if(db){
+      if(user){ try{ body.updatedBy = await user.id(); }catch(e){} }
+      await db.doc("reports/"+cur.key).set(body);
+    } else {
+      const all = ls.get("tarteel_reports")||{}; all[cur.key]={...body,key:cur.key}; ls.set("tarteel_reports",all);
+    }
+    reportsCache[cur.key]={...body,key:cur.key};
+    saveState="ok";
+  }catch(e){ saveState="err"; }
+  saving=false; paintSave(); paintRail();
+  if(pendingSave){ pendingSave=false; doSave(); }
+}
+function paintSave(){
+  const el=$("#saveState"); if(!el) return;
+  el.className="save "+(saveState==="ok"?"ok":saveState==="busy"?"busy":"");
+  el.textContent = saveState==="ok"?"✓ محفوظ":saveState==="busy"?"جارٍ الحفظ…":saveState==="err"?"تعذّر الحفظ، تحقق من الاتصال":"";
+}
+
+function openReport(dk,cal,y,m){
+  const key=repKey(dk,cal,y,m);
+  cur={dk,cal,y,m,key};
+  const ex = reportsCache[key];
+  curData = ex? JSON.parse(JSON.stringify(ex.data||{})) : {};
+  if(!curData["1"]) curData["1"]={};
+  if(!curData["1"].submitted) curData["1"].submitted=todayISO();
+  ls.set("tarteel_cur_"+dk,{cal,y,m});
+}
+function ensureCur(dk){
+  if(cur && cur.dk===dk) return true;
+  const last = ls.get("tarteel_cur_"+dk);
+  if(last){ openReport(dk,last.cal,last.y,last.m); return true; }
+  return false;
+}
+
+/* ================= Routing ================= */
+// #home | #res | #res-1 … #res-9 | #res-view  (same for media)
+function route(){
+  const h=(location.hash||"#home").slice(1);
+  if(h==="home"||!h) return {page:"home"};
+  const m=h.match(/^(res|media)(?:-(\d|view))?$/);
+  if(!m) return {page:"home"};
+  return {page: m[2]? (m[2]==="view"?"view":"sec") : "start", dk:m[1], sid:m[2]};
+}
+window.addEventListener("hashchange",()=>{ render(); window.scrollTo(0,0); });
+
+/* ================= Render ================= */
+const app=$("#app");
+function render(){
+  const r=route();
+  app.removeAttribute("data-dept");
+  if(r.dk) app.setAttribute("data-dept", DEPTS[r.dk].dept);
+  let body="";
+  if(r.page==="home") body=viewHome();
+  else if(r.page==="start") body=viewStart(r.dk);
+  else if(!ensureCur(r.dk)){ location.replace("#"+r.dk); return; }
+  else if(r.page==="sec") body=viewSection(r.dk,r.sid);
+  else if(r.page==="view") body=viewReport(r.dk);
+  app.innerHTML = header(r) + `<main class="wrap">${(r.page==="home")?`<div class="banner">تُحفظ التقارير تلقائياً على هذا الجهاز وفي هذا المتصفح. بعد الانتهاء حمّل التقرير PDF وأرسله، واحفظ نسخة احتياطية من الصفحة الرئيسية بين حين وآخر.</div>`:""}${body}</main>`;
+  bind(r);
+  paintSave();
+}
+
+function header(r){
+  const d=r.dk&&DEPTS[r.dk];
+  let crumbs=`<a href="#home">الرئيسية</a>`;
+  if(d){ crumbs+=` › <a href="#${r.dk}">${d.name}</a>`; if(cur&&cur.dk===r.dk&&r.page!=="start") crumbs+=` › <span>${monthName(cur.cal,cur.m)} ${cur.y}${cur.cal==="h"?"هـ":"م"}</span>`; }
+  return `<header class="top"><div class="top-in">
+    <a class="brand" href="#home"><span class="brand-mark">ترتيل</span><span class="brand-txt"><b>منصة التقارير الشهرية</b><span>${ASSOC}</span></span></a>
+    <nav class="crumbs">${crumbs}${(r.page==="sec"||r.page==="view")?`<span id="saveState" class="save"></span>`:""}</nav>
+  </div></header>`;
+}
+
+function viewHome(){
+  const list=Object.values(reportsCache).sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0));
+  const cards=Object.values(DEPTS).map(d=>{
+    const n=list.filter(x=>x.dept===d.key).length;
+    return `<a class="dept" href="#${d.key}" data-dept="${d.dept}">
+      <h2>${d.name}</h2>
+      <div class="verse">﴿${d.verse}﴾<small>[${d.ref}]</small></div>
+      <div class="meta"><span>${d.slogan}</span><span class="num">${n} تقرير</span></div>
+      <span class="go">ابدأ التقرير ←</span></a>`;
+  }).join("");
+  const rows=list.length? list.map(x=>{
+    const d=DEPTS[x.dept]; if(!d) return "";
+    return `<div class="arch-row"><span><b>${d.name}</b></span><span class="num">${monthName(x.cal,x.m)} ${x.y}${x.cal==="h"?"هـ":"م"}</span>
+      <span class="hide-s"><span class="bar"><i style="width:${x.pct||0}%"></i></span><small class="num" style="color:var(--muted)">مكتمل ${x.pct||0}٪</small></span>
+      <span style="display:flex;gap:6px"><button class="btn" data-open="${x.key}" data-to="1">تعديل</button><button class="btn" data-open="${x.key}" data-to="view">عرض</button></span></div>`;
+  }).join("") : `<div class="arch-empty">لا توجد تقارير محفوظة بعد. اختر القسم أعلاه وابدأ أول تقرير؛ يُحفظ تلقائياً أثناء الكتابة.</div>`;
+  return `<section class="hero"><div><h1>التقرير الشهري للأقسام</h1>
+    <p>اختر القسم، ثم الشهر، وعبّئ كل محور في صفحته. ستجد بجانب كل محور اقتراحات جاهزة تضغط عليها لتُضاف، وزر يحسب المؤشرات من بياناتك.</p></div>
+    <div class="lic">مصرحة بالمركز الوطني لتنمية القطاع غير الربحي برقم (3362)</div></section>
+    <div class="depts">${cards}</div>
+    <h3 class="h3">التقارير المحفوظة</h3>
+    <div class="tools" style="margin:0 0 12px"><button class="btn" id="bkOut">حفظ نسخة احتياطية</button><label class="btn" for="bkIn" style="cursor:pointer">استيراد نسخة أو تقرير</label><input type="file" id="bkIn" accept=".json,application/json" hidden></div>
+    <div class="arch"><div class="arch-row head"><span>القسم</span><span>الشهر</span><span class="hide-s">الاكتمال</span><span></span></div>${rows}</div>`;
+}
+
+function viewStart(dk){
+  const d=DEPTS[dk]; const hn=hijriNow(); const last=ls.get("tarteel_cur_"+dk);
+  const cal=last?.cal||"h";
+  const y = last?.y || (cal==="h"?hn.y:new Date().getFullYear());
+  // default: previous month (report is for the month just ended) unless a last one exists
+  let m = last?.m || (hn.m-1||12);
+  const years = cal==="h"? [hn.y-1,hn.y,hn.y+1] : [new Date().getFullYear()-1,new Date().getFullYear(),new Date().getFullYear()+1];
+  const mine=Object.values(reportsCache).filter(x=>x.dept===dk).sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0)).slice(0,6);
+  return `<div class="start">
+    <div><h1>${d.name}</h1><div style="color:var(--muted)">${d.slogan}</div></div>
+    <div class="row">
+      <label class="f">التقويم<select class="inp" id="st-cal"><option value="h" ${cal==="h"?"selected":""}>هجري</option><option value="g" ${cal==="g"?"selected":""}>ميلادي</option></select></label>
+      <label class="f">الشهر<select class="inp" id="st-m">${(cal==="g"?GREG:HIJRI).map((n,i)=>`<option value="${i+1}" ${i+1===m?"selected":""}>${n}</option>`).join("")}</select></label>
+      <label class="f">العام<select class="inp num" id="st-y">${years.map(v=>`<option ${v===y?"selected":""}>${v}</option>`).join("")}</select></label>
+    </div>
+    <div id="st-note" style="font-size:13px;color:var(--muted)"></div>
+    <div class="row" style="flex:none"><button class="btn pri" id="st-go" style="flex:none">فتح التقرير</button></div>
+    ${mine.length?`<div><div style="font-size:13px;color:var(--muted);margin-bottom:6px">تقارير القسم السابقة</div><div class="chips">${mine.map(x=>`<button class="chip" data-open="${x.key}" data-to="1">${monthName(x.cal,x.m)} ${x.y} · ${x.pct||0}٪</button>`).join("")}</div></div>`:""}
+  </div>`;
+}
+
+function rail(dk,active){
+  const d=DEPTS[dk];
+  return `<nav class="rail" id="rail"><div class="rail-h"><b>${d.short}</b><span>${monthName(cur.cal,cur.m)} ${cur.y}${cur.cal==="h"?"هـ":"م"} · <span class="num" id="pctTxt">${completion(dk,curData)}٪</span></span></div>
+   ${d.sections.map(s=>`<a href="#${dk}-${s.id}" class="${s.id===active?"on ":""}${secStatus(s,curData)}" data-sid="${s.id}"><span class="dot num">${s.id}</span><span>${s.title}</span></a>`).join("")}
+   <div class="sep"></div>
+   <a href="#${dk}-view" class="${active==="view"?"on":""}"><span class="dot">▤</span><span>عرض التقرير كاملاً</span></a></nav>`;
+}
+function paintRail(){
+  const r=route(); if(!cur||!r.dk) return;
+  document.querySelectorAll("#rail a[data-sid]").forEach(a=>{
+    const s=DEPTS[r.dk].sections.find(x=>x.id===a.dataset.sid);
+    a.className=(s.id===r.sid?"on ":"")+secStatus(s,curData);
+  });
+  const p=$("#pctTxt"); if(p) p.textContent=completion(r.dk,curData)+"٪";
+}
+
+function viewSection(dk,sid){
+  const d=DEPTS[dk]; const s=d.sections.find(x=>x.id===sid); if(!s) return "";
+  if(!curData[sid]) curData[sid]={};
+  const idx=d.sections.indexOf(s), prev=d.sections[idx-1], next=d.sections[idx+1];
+  return `<div class="shell">${rail(dk,sid)}
+    <section class="main"><div class="sec-head"><span class="sec-no num">${s.id}</span><h1>${s.title}</h1></div>
+      <p class="sec-sub">${s.sub}</p>
+      <div id="secBody">${secBody(d,s)}</div>
+      <div class="nav">${prev?`<a class="btn" href="#${dk}-${prev.id}">→ ${prev.title}</a>`:`<a class="btn" href="#${dk}">→ تغيير الشهر</a>`}
+        ${next?`<a class="btn pri" href="#${dk}-${next.id}">التالي: ${next.title} ←</a>`:`<a class="btn pri" href="#${dk}-view">عرض التقرير كاملاً ←</a>`}</div>
+    </section>
+    <aside class="side">${sidePanel(d,s)}</aside></div>`;
+}
+
+function secBody(d,s){
+  const v=curData[s.id];
+  if(s.type==="basics"){
+    return `<div class="card grid2">
+      <label class="f">الشهر<input class="inp" value="${monthName(cur.cal,cur.m)}" disabled></label>
+      <label class="f">العام<input class="inp num" value="${cur.y}${cur.cal==="h"?" هـ":" م"}" disabled></label>
+      <label class="f">معد التقرير<input class="inp" id="f-preparer" data-f="preparer" value="${esc(v.preparer)}" placeholder="الاسم الثلاثي"></label>
+      <label class="f">تاريخ رفع التقرير<input class="inp num" type="date" id="f-submitted" data-f="submitted" value="${esc(v.submitted)}"></label>
+    </div>`;
+  }
+  if(s.type==="kpis"){
+    return `<div class="kpis">${s.items.map(i=>`<div class="kpi">
+      <div class="k-l">${i.l}</div>
+      <input class="inp num" inputmode="decimal" id="k-${i.k}" data-f="${i.k}" value="${esc(v[i.k])}" placeholder="—">
+      <div class="unit">${i.u}</div>
+      <div class="k-h">${i.h}</div>
+      ${i.calc?`<button class="sugg-btn" data-calc="${i.k}">اقتراح من البيانات</button>`:""}
+    </div>`).join("")}</div>`;
+  }
+  if(s.type==="table"){
+    if(!v.rows){
+      v.rows = s.fixed? s.fixed.map(n=>({[s.cols[0].k]:n,_fixed:true})) : Array.from({length:s.rows},()=>({}));
+    }
+    const totals = s.total? (Array.isArray(s.total)?s.total:[s.total]) : [];
+    const head=`<tr><th style="width:38px">م</th>${s.cols.map(c=>`<th>${c.l}${c.s?`<small>${c.s}</small>`:""}</th>`).join("")}<th style="width:34px"></th></tr>`;
+    const body=v.rows.map((r,ri)=>`<tr><td class="m num">${ri+1}</td>${s.cols.map(c=>{
+        const id=`c-${ri}-${c.k}`;
+        if(c.t==="fixed") return r._fixed? `<td class="fixed">${esc(r[c.k])}</td>` : `<td><input class="inp" id="${id}" data-r="${ri}" data-c="${c.k}" value="${esc(r[c.k])}" placeholder="اسم المنصة"></td>`;
+        if(c.t==="select") return `<td><select class="inp" id="${id}" data-r="${ri}" data-c="${c.k}"><option value="">—</option>${c.o.map(o=>`<option ${r[c.k]===o?"selected":""}>${o}</option>`).join("")}</select></td>`;
+        if(c.t==="number") return `<td><input class="inp num" inputmode="decimal" id="${id}" data-r="${ri}" data-c="${c.k}" value="${esc(r[c.k])}"></td>`;
+        if(c.t==="date") return `<td><input class="inp num" type="date" id="${id}" data-r="${ri}" data-c="${c.k}" value="${esc(r[c.k])}"></td>`;
+        if(c.t==="url") return `<td><input class="inp" dir="ltr" id="${id}" data-r="${ri}" data-c="${c.k}" value="${esc(r[c.k])}" placeholder="https://"></td>`;
+        return `<td><textarea class="inp" rows="1" id="${id}" data-r="${ri}" data-c="${c.k}">${esc(r[c.k])}</textarea></td>`;
+      }).join("")}<td>${r._fixed?"":`<button class="del" data-del="${ri}" title="حذف السطر" aria-label="حذف السطر">×</button>`}</td></tr>`).join("");
+    const tot = totals.length? `<tr class="total"><td></td>${s.cols.map(c=>totals.includes(c.k)?`<td class="num" id="tot-${c.k}">${fmt(sumCol(curData,s.id,c.k))}${c.s?" "+c.s:""}</td>`:(c.t==="fixed"?`<td>الإجمالي</td>`:`<td></td>`)).join("")}<td></td></tr>`:"";
+    return `<div class="tbl-wrap"><table><thead>${head}</thead><tbody>${body}${tot}</tbody></table></div>
+      <div class="tools">${(!s.fixed||s.extra)?`<button class="btn" id="addRow">+ إضافة سطر</button>`:""}${s.ai&&sample?`<button class="btn ai" data-ai="1">✦ اقترح لي صفوفاً مناسبة</button>`:""}</div>`;
+  }
+  if(s.type==="list"){
+    if(!v.items) v.items=Array.from({length:s.rows},()=>"");
+    return `<div class="lst">${v.items.map((t,i)=>`<div class="lst-row"><span class="n num">${i+1}</span><textarea class="inp" rows="1" id="l-${i}" data-i="${i}" placeholder="اكتب أو اختر من الاقتراحات">${esc(t)}</textarea><button class="del" data-ldel="${i}" aria-label="حذف">×</button></div>`).join("")}</div>
+      <div class="tools"><button class="btn" id="addItem">+ إضافة بند</button>${s.ai&&sample?`<button class="btn ai" data-ai="1">✦ اقترح صياغات من بيانات تقريري</button>`:""}</div>`;
+  }
+  if(s.type==="checks"){
+    const sel=v.sel||[];
+    return `<div class="checks">${s.opts.map((o,i)=>`<label class="chk"><input type="checkbox" id="ck-${i}" data-ck="${esc(o)}" ${sel.includes(o)?"checked":""}> ${o}</label>`).join("")}</div>
+      <label class="f" style="margin-top:14px">تفاصيل الاحتياج / أخرى<textarea class="inp" id="ck-other" data-f="other" rows="3" placeholder="مثال: ميكروفون لاسلكي للتغطيات الميدانية">${esc(v.other)}</textarea></label>`;
+  }
+  if(s.type==="approve"){
+    return `<div class="grid2">
+      <div class="card" style="display:grid;gap:12px"><b style="color:var(--accent)">${s.mgr}</b>
+        <label class="f">الاسم<input class="inp" id="a-mgr" data-f="mgr" value="${esc(v.mgr)}"></label>
+        <label class="f">التاريخ<input class="inp num" type="date" id="a-mgrd" data-f="mgrDate" value="${esc(v.mgrDate)}"></label></div>
+      <div class="card" style="display:grid;gap:12px"><b style="color:var(--accent)">اعتماد المدير التنفيذي</b>
+        <label class="f">الاسم<input class="inp" id="a-exec" data-f="exec" value="${esc(v.exec)}"></label>
+        <label class="f">التاريخ<input class="inp num" type="date" id="a-execd" data-f="execDate" value="${esc(v.execDate)}"></label></div>
+    </div>`;
+  }
+  return "";
+}
+
+function sidePanel(d,s){
+  let chips="";
+  if(s.chips){
+    if(Array.isArray(s.chips)) chips=`<div class="chips-g"><b>اضغط لإضافة اقتراح</b><div class="chips">${s.chips.map(c=>`<button class="chip" data-chip="${esc(c)}">${esc(c)}</button>`).join("")}</div></div>`;
+    else chips=Object.entries(s.chips).map(([k,arr])=>{ const col=s.cols.find(c=>c.k===k); return `<div class="chips-g"><b>${col?col.l:""}</b><div class="chips">${arr.map(c=>`<button class="chip" data-chip="${esc(c)}" data-col="${k}">${esc(c)}</button>`).join("")}</div></div>`; }).join("");
+  }
+  if(s.type==="basics"){
+    const prevPrep = Object.values(reportsCache).filter(x=>x.dept===d.key&&x.data?.["1"]?.preparer).map(x=>x.data["1"].preparer);
+    const uniq=[...new Set(prevPrep)].slice(0,4);
+    if(uniq.length) chips=`<div class="chips-g"><b>معدّون سابقون</b><div class="chips">${uniq.map(c=>`<button class="chip" data-fill="preparer" data-chip="${esc(c)}">${esc(c)}</button>`).join("")}</div></div>`;
+  }
+  if(s.type==="approve"){
+    const pm=Object.values(reportsCache).filter(x=>x.data?.["9"]?.mgr&&x.dept===d.key).map(x=>x.data["9"].mgr);
+    const pe=Object.values(reportsCache).filter(x=>x.data?.["9"]?.exec).map(x=>x.data["9"].exec);
+    const a=[...new Set(pm)].slice(0,3), b=[...new Set(pe)].slice(0,3);
+    chips=(a.length?`<div class="chips-g"><b>${s.mgr}</b><div class="chips">${a.map(c=>`<button class="chip" data-fill="mgr" data-chip="${esc(c)}">${esc(c)}</button>`).join("")}</div></div>`:"")+
+          (b.length?`<div class="chips-g"><b>المدير التنفيذي</b><div class="chips">${b.map(c=>`<button class="chip" data-fill="exec" data-chip="${esc(c)}">${esc(c)}</button>`).join("")}</div></div>`:"")+
+          `<div class="chips-g"><button class="chip" data-today="1">تعبئة التاريخين بتاريخ اليوم</button></div>`;
+  }
+  const prevBtn = (s.type==="table"&&!s.fixed||s.type==="list") && reportsCache[prevKey(cur)]?.data?.[s.id] ? `<button class="btn" style="width:100%;margin-top:10px" data-copyprev="1">نسخ بيانات الشهر السابق</button>`:"";
+  return `<div class="panel"><h4>إرشادات التعبئة</h4><ul class="tips">${(s.tips||[]).map(t=>`<li>${t}</li>`).join("")}</ul></div>
+    ${chips||prevBtn?`<div class="panel"><h4>اقتراحات</h4><p>اضغط على أي اقتراح ليُضاف في أول خانة فارغة، أو في الخانة التي تكتب فيها.</p>${chips}${prevBtn}<div id="aiOut"></div></div>`:`<div id="aiOut"></div>`}`;
+}
+
+function viewReport(dk){
+  const d=DEPTS[dk];
+  const parts=d.sections.map(s=>{
+    const v=curData[s.id]||{};
+    let inner="";
+    if(s.type==="basics") inner=`<div class="rep-kv"><div>الشهر<b>${monthName(cur.cal,cur.m)}</b></div><div>العام<b class="num">${cur.y}</b></div><div>معد التقرير<b>${esc(v.preparer)||"—"}</b></div><div>تاريخ الرفع<b class="num">${esc(v.submitted)||"—"}</b></div></div>`;
+    else if(s.type==="kpis") inner=`<div class="rep-kv">${s.items.map(i=>`<div>${i.l}<b class="num">${v[i.k]!==undefined&&v[i.k]!==""?esc(i.u==="٪"?v[i.k]+"٪":fmt(num(v[i.k]))):"—"}</b></div>`).join("")}</div>`;
+    else if(s.type==="table"){
+      const rows=(v.rows||[]).filter(r=>s.cols.some(c=>c.t!=="fixed"&&String(r[c.k]||"").trim())||(!r._fixed&&String(r[s.cols[0].k]||"").trim()));
+      const tot=s.total?(Array.isArray(s.total)?s.total:[s.total]):[];
+      inner=rows.length?`<div class="tbl-wrap"><table><tr><th>م</th>${s.cols.map(c=>`<th>${c.l}</th>`).join("")}</tr>${rows.map((r,i)=>`<tr><td class="num">${i+1}</td>${s.cols.map(c=>`<td class="${c.t==="number"?"num":""}">${c.t==="number"&&r[c.k]?fmt(num(r[c.k])):esc(r[c.k])}</td>`).join("")}</tr>`).join("")}
+        ${tot.length?`<tr class="total"><td></td>${s.cols.map(c=>tot.includes(c.k)?`<td class="num">${fmt(sumCol(curData,s.id,c.k))}</td>`:(c.t==="fixed"?"<td>الإجمالي</td>":"<td></td>")).join("")}</tr>`:""}</table></div>`:`<div class="empty">لم يُعبّأ بعد</div>`;
+    }
+    else if(s.type==="list"){ const it=(v.items||[]).filter(x=>String(x).trim()); inner=it.length?`<ol>${it.map(x=>`<li>${esc(x)}</li>`).join("")}</ol>`:`<div class="empty">لم يُعبّأ بعد</div>`; }
+    else if(s.type==="checks"){ inner=(v.sel||[]).length||v.other?`<div>${(v.sel||[]).map(x=>`☑ ${x}`).join("  ·  ")}${v.other?`<div style="margin-top:6px">${esc(v.other)}</div>`:""}</div>`:`<div class="empty">لم يُعبّأ بعد</div>`; }
+    else if(s.type==="approve") inner=`<div class="sig"><div><b>${s.mgr}</b>الاسم: ${esc(v.mgr)||"…………"}<br>التوقيع: …………<br>التاريخ: <span class="num">${esc(v.mgrDate)||"…………"}</span></div><div><b>اعتماد المدير التنفيذي</b>الاسم: ${esc(v.exec)||"…………"}<br>التوقيع: …………<br>التاريخ: <span class="num">${esc(v.execDate)||"…………"}</span></div></div>`;
+    return `<div class="rep-sec"><h2><i class="num">${s.id}</i>${s.title} <a href="#${dk}-${s.id}" style="font-size:12px;font-family:var(--f-body);color:var(--accent);margin-inline-start:auto">تعديل</a></h2>${inner}</div>`;
+  }).join("");
+  return `<div class="shell" style="grid-template-columns:230px minmax(0,1fr)">${rail(dk,"view")}<section class="main">
+    <div class="pdf-row"><button class="btn pri" id="pdfRep">⬇ تحميل التقرير PDF</button><button class="btn" id="printRep">طباعة مباشرة</button><button class="btn" id="copyRep">نسخ التقرير نصاً</button><a class="btn" href="#${dk}-1">العودة للتعبئة</a><span class="pdf-msg" id="pdfMsg"></span></div>
+    <article class="rep"><div class="rep-top"><div><div style="font-size:12.5px;color:var(--muted)">جمعية تحفيظ القرآن الكريم بخليص · بالقرآن .. نبني الأجيال</div><h1>التقرير الشهري</h1><span class="tag">${d.name}</span><div style="margin-top:6px;color:var(--muted)">${d.slogan}</div></div>
+      <div class="verse">﴿${d.verse}﴾<small>[${d.ref}]</small></div></div>
+      <div class="rep-body">${parts}</div></article></section></div>`;
+}
+
+function reportText(dk){
+  const d=DEPTS[dk]; let t=`التقرير الشهري - ${d.name}\n${ASSOC}\nالشهر: ${monthName(cur.cal,cur.m)} ${cur.y}\n`;
+  d.sections.forEach(s=>{
+    const v=curData[s.id]||{}; t+=`\n${s.id}) ${s.title}\n`;
+    if(s.type==="basics") t+=`معد التقرير: ${v.preparer||"-"}\nتاريخ الرفع: ${v.submitted||"-"}\n`;
+    if(s.type==="kpis") s.items.forEach(i=>t+=`- ${i.l}: ${v[i.k]||"-"} ${i.u}\n`);
+    if(s.type==="table") (v.rows||[]).forEach((r,i)=>{ const vals=s.cols.map(c=>r[c.k]).filter(x=>String(x||"").trim()); if(vals.length>(r._fixed?1:0)) t+=`${i+1}. ${vals.join(" | ")}\n`; });
+    if(s.type==="list") (v.items||[]).filter(x=>String(x).trim()).forEach((x,i)=>t+=`${i+1}. ${x}\n`);
+    if(s.type==="checks") t+=`${(v.sel||[]).join("، ")}${v.other?"\n"+v.other:""}\n`;
+    if(s.type==="approve") t+=`${s.mgr}: ${v.mgr||"-"} (${v.mgrDate||"-"})\nالمدير التنفيذي: ${v.exec||"-"} (${v.execDate||"-"})\n`;
+  });
+  return t;
+}
+
+
+/* ================= PDF (A4) ================= */
+function ppBlocks(dk){
+  const d=DEPTS[dk], out=[];
+  const val=(x)=>esc(x==null?"":x);
+  d.sections.forEach(s=>{
+    const v=curData[s.id]||{};
+    let b="";
+    if(s.type==="basics") b=`<div class="pp-kv"><span>الشهر: <b>${monthName(cur.cal,cur.m)}</b></span><span>العام: <b>${cur.y}${cur.cal==="h"?"هـ":"م"}</b></span><span>معد التقرير: <b>${val(v.preparer)}</b></span><span>تاريخ رفع التقرير: <b>${val(v.submitted)}</b></span></div>`;
+    else if(s.type==="kpis") b=`<div class="pp-kpis">${s.items.map(i=>{ const x=v[i.k]; const t=(x!==undefined&&x!=="")?(i.u==="٪"?x+"٪":fmt(num(x))):"&nbsp;"; return `<div class="pp-kpi"><div>${i.l}${i.u!=="٪"&&i.u!=="ريال"?"":` (${i.u})`}</div><b>${t}</b></div>`; }).join("")}</div>`;
+    else if(s.type==="table"){
+      let rows=(v.rows||[]).filter(r=>r._fixed||s.cols.some(c=>String(r[c.k]||"").trim()));
+      if(!rows.length && s.fixed) rows=s.fixed.map(n=>({[s.cols[0].k]:n,_fixed:true}));
+      const min = s.fixed? rows.length : Math.max(rows.length, 3);
+      while(rows.length<min) rows.push({});
+      const tot=s.total?(Array.isArray(s.total)?s.total:[s.total]):[];
+      b=`<table><tr><th style="width:26px">م</th>${s.cols.map(c=>`<th>${c.l}${c.s?` (${c.s})`:""}</th>`).join("")}</tr>
+        ${rows.map((r,i)=>`<tr><td class="m">${i+1}</td>${s.cols.map(c=>`<td>${c.t==="number"&&r[c.k]?fmt(num(r[c.k])):val(r[c.k])}</td>`).join("")}</tr>`).join("")}
+        ${tot.length?`<tr class="t"><td></td>${s.cols.map(c=>tot.includes(c.k)?`<td>${fmt(sumCol(curData,s.id,c.k))}</td>`:(c.t==="fixed"?"<td>الإجمالي</td>":"<td></td>")).join("")}</tr>`:""}</table>`;
+    }
+    else if(s.type==="list"){ const it=(v.items||[]).filter(x=>String(x).trim()); while(it.length<Math.min(s.rows,4)) it.push(""); b=`<ol>${it.map((x,i)=>`<li><i>${i+1}</i><span>${val(x)}</span></li>`).join("")}</ol>`; }
+    else if(s.type==="checks"){ const sel=v.sel||[]; b=`<div class="pp-chks">${s.opts.map(o=>`<span><em>${sel.includes(o)?"✓":""}</em>${o}</span>`).join("")}</div>${v.other?`<div style="margin-top:6px">أخرى / تفاصيل: ${val(v.other)}</div>`:""}`; }
+    else if(s.type==="approve"){
+      out.push(`<div class="pp-sig"><div><b>${s.mgr}</b>الاسم: ${val(v.mgr)||"................................"}<br>التوقيع: ................................<br>التاريخ: ${val(v.mgrDate)||"................................"}</div><div><b>اعتماد المدير التنفيذي</b>الاسم: ${val(v.exec)||"................................"}<br>التوقيع: ................................<br>التاريخ: ${val(v.execDate)||"................................"}</div></div>`);
+      return;
+    }
+    out.push(`<div class="pp-sec"><div class="pp-sh"><b>${s.id}</b>${s.title}</div><div class="pp-sb">${b}</div></div>`);
+  });
+  return out;
+}
+function ppHead(d){
+  return `<div class="pp-head"><div class="pp-logo">ترتيل<small>جمعية تحفيظ القرآن الكريم بخليص<br>بالقرآن .. نبني الأجيال</small></div>
+    <div class="pp-title"><h1>التقرير الشهري</h1><span class="tag">${d.name}</span><div>${d.slogan}</div></div>
+    <div class="pp-verse">﴿${d.verse}﴾<small>[${d.ref}]</small></div></div>`;
+}
+function buildPages(dk){
+  const d=DEPTS[dk];
+  const host=document.createElement("div"); host.className="pp-host"; host.setAttribute("dir","rtl"); document.body.appendChild(host);
+  const blocks=ppBlocks(dk);
+  const pages=[];
+  const newPage=(first)=>{ const pg=document.createElement("div"); pg.className="pp "+(d.dept==="media"?"media":"");
+    pg.innerHTML=`<div class="pp-in">${first?ppHead(d):""}</div><div class="pp-foot"><span>${ASSOC} · مصرحة برقم (3362)</span><span class="pn"></span></div>`;
+    host.appendChild(pg); pages.push(pg); return pg.querySelector(".pp-in"); };
+  let inner=newPage(true);
+  const limit=1123-54; // page height minus bottom padding (footer area)
+  blocks.forEach(html=>{
+    const tmp=document.createElement("div"); tmp.innerHTML=html; const el=tmp.firstElementChild;
+    inner.appendChild(el);
+    const pg=inner.parentElement;
+    if(el.offsetTop+el.offsetHeight>limit && inner.children.length>1){ inner.removeChild(el); inner=newPage(false); inner.appendChild(el); }
+  });
+  pages.forEach((p,i)=>p.querySelector(".pn").textContent=`صفحة ${i+1} من ${pages.length}`);
+  return {host,pages};
+}
+async function makePDF(dk,btn){
+  const msg=$("#pdfMsg");
+  if(!window.html2canvas||!window.jspdf){ msg.textContent="تعذّر تحميل أداة إنشاء PDF، تحقق من الاتصال وأعد المحاولة."; return; }
+  btn.disabled=true; const old=btn.textContent; btn.textContent="جارٍ تجهيز الملف…"; msg.textContent="";
+  let host;
+  try{
+    try{ await document.fonts.ready; }catch(e){}
+    const built=buildPages(dk); host=built.host;
+    const pdf=new window.jspdf.jsPDF({unit:"pt",format:"a4",orientation:"portrait",compress:true});
+    for(let i=0;i<built.pages.length;i++){
+      const c=await window.html2canvas(built.pages[i],{scale:2,backgroundColor:"#ffffff",logging:false,width:794,height:1123,windowWidth:794,scrollX:0,scrollY:0});
+      if(i) pdf.addPage();
+      pdf.addImage(c.toDataURL("image/jpeg",0.92),"JPEG",0,0,595.28,841.89);
+    }
+    const d=DEPTS[dk];
+    const name=`التقرير الشهري - ${d.short} - ${monthName(cur.cal,cur.m)} ${cur.y}.pdf`;
+    host.remove(); host=null;
+    pdf.save(name);
+    msg.textContent="تم تحميل الملف.";
+  }catch(e){
+    const c=e&&e.code;
+    msg.textContent = c==="declined"? "أُلغي الحفظ." : c==="rate_limited"? "هناك نافذة حفظ مفتوحة، أكملها أولاً." : "تعذّر إنشاء الملف، أعد المحاولة.";
+  }
+  if(host) host.remove();
+  btn.disabled=false; btn.textContent=old;
+}
+
+/* ================= Events ================= */
+function bind(r){
+  app.querySelectorAll("[data-open]").forEach(b=>b.onclick=()=>{ const p=parseKey(b.dataset.open); openReport(p.dk,p.cal,p.y,p.m); location.hash=`${p.dk}-${b.dataset.to}`; });
+  if(r.page==="home"){
+    $("#bkOut").onclick=()=>{ const blob=new Blob([JSON.stringify(reportsCache,null,1)],{type:"application/json"}); const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="تقارير-ترتيل-"+todayISO()+".json"; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),2000); };
+    $("#bkIn").onchange=async e=>{ const f=e.target.files[0]; if(!f) return; try{ const obj=JSON.parse(await f.text()); let n=0;
+        Object.entries(obj).forEach(([k,v])=>{ if(v&&v.dept&&DEPTS[v.dept]&&v.data){ const ex=reportsCache[k]; if(!ex||(v.updatedAt||0)>=(ex.updatedAt||0)){ reportsCache[k]={...v,key:k}; n++; } } });
+        ls.set("tarteel_reports",reportsCache); toast(n?`استُورد ${n} تقرير`:"لا توجد تقارير أحدث في الملف"); render(); }catch(err){ toast("الملف غير صالح"); } };
+  }
+  if(r.page==="start"){
+    const calSel=$("#st-cal");
+    const note=()=>{ const k=repKey(r.dk,$("#st-cal").value,+$("#st-y").value,+$("#st-m").value); const ex=reportsCache[k]; $("#st-note").textContent= ex? `يوجد تقرير محفوظ لهذا الشهر (مكتمل ${ex.pct||0}٪) وسيُفتح للمتابعة.` : "سيُنشأ تقرير جديد لهذا الشهر."; };
+    calSel.onchange=()=>{ const c=calSel.value, hn=hijriNow(), gy=new Date().getFullYear();
+      $("#st-m").innerHTML=(c==="g"?GREG:HIJRI).map((n,i)=>`<option value="${i+1}">${n}</option>`).join("");
+      const ys=c==="h"?[hn.y-1,hn.y,hn.y+1]:[gy-1,gy,gy+1]; $("#st-y").innerHTML=ys.map((v,i)=>`<option ${i===1?"selected":""}>${v}</option>`).join(""); note(); };
+    $("#st-m").onchange=note; $("#st-y").onchange=note; note();
+    $("#st-go").onclick=()=>{ openReport(r.dk,$("#st-cal").value,+$("#st-y").value,+$("#st-m").value); location.hash=r.dk+"-1"; };
+    return;
+  }
+  if(r.page==="view"){
+    $("#pdfRep").onclick=()=>makePDF(r.dk,$("#pdfRep"));
+    $("#printRep").onclick=async()=>{ try{ await document.fonts.ready; }catch(e){} const b=buildPages(r.dk); b.host.classList.add("printing");
+      const done=()=>{ b.host.remove(); window.removeEventListener("afterprint",done); }; window.addEventListener("afterprint",done); setTimeout(()=>window.print(),150); };
+    $("#copyRep").onclick=()=>{ const t=reportText(r.dk);
+      navigator.clipboard?.writeText(t).then(()=>toast("نُسخ التقرير"),()=>fallbackCopy(t)) ?? fallbackCopy(t); };
+    return;
+  }
+  if(r.page!=="sec") return;
+  const s=DEPTS[r.dk].sections.find(x=>x.id===r.sid); const v=curData[s.id];
+  const changed=()=>{ scheduleSave(); paintRail(); };
+
+  app.querySelectorAll("#secBody [data-f]").forEach(el=>el.addEventListener("input",()=>{ v[el.dataset.f]=el.value; changed(); }));
+  app.querySelectorAll("#secBody [data-r]").forEach(el=>{
+    const ev=el.tagName==="SELECT"?"change":"input";
+    el.addEventListener(ev,()=>{ v.rows[+el.dataset.r][el.dataset.c]=el.value; updateTotals(s); changed(); });
+    if(el.tagName==="TEXTAREA") autoGrow(el);
+  });
+  app.querySelectorAll("#secBody [data-i]").forEach(el=>{ el.addEventListener("input",()=>{ v.items[+el.dataset.i]=el.value; changed(); }); autoGrow(el); });
+  app.querySelectorAll("#secBody [data-ck]").forEach(el=>el.addEventListener("change",()=>{ const sel=new Set(v.sel||[]); el.checked?sel.add(el.dataset.ck):sel.delete(el.dataset.ck); v.sel=[...sel]; changed(); }));
+  app.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{ v.rows.splice(+b.dataset.del,1); changed(); rerenderSec(r); });
+  app.querySelectorAll("[data-ldel]").forEach(b=>b.onclick=()=>{ v.items.splice(+b.dataset.ldel,1); changed(); rerenderSec(r); });
+  $("#addRow")&&($("#addRow").onclick=()=>{ v.rows.push({}); changed(); rerenderSec(r); const inp=app.querySelector(`[data-r="${v.rows.length-1}"]`); inp&&inp.focus(); });
+  $("#addItem")&&($("#addItem").onclick=()=>{ v.items.push(""); changed(); rerenderSec(r); $(`#l-${v.items.length-1}`)?.focus(); });
+
+  app.querySelectorAll("[data-calc]").forEach(b=>b.onclick=()=>{
+    const it=s.items.find(i=>i.k===b.dataset.calc); const val=it.calc(curData);
+    if(val==null){ toast("لا توجد بيانات كافية للحساب بعد"); return; }
+    v[it.k]=String(val); $(`#k-${it.k}`).value=val; changed(); toast(`${it.l}: ${val}`);
+  });
+
+  // remember the last focused field for chip insertion
+  let lastFocus=null;
+  app.querySelectorAll("#secBody .inp").forEach(el=>el.addEventListener("focus",()=>lastFocus=el));
+  app.querySelector(".side").onmousedown=(e=>{ if(e.target.closest(".chip")) e.preventDefault(); });
+  app.querySelector(".side").onclick=(e=>{
+    const c=e.target.closest(".chip"); if(!c) return;
+    if(c.dataset.today){ v.mgrDate=v.execDate=todayISO(); changed(); rerenderSec(r); return; }
+    if(c.dataset.fill){ v[c.dataset.fill]=c.dataset.chip; changed(); rerenderSec(r); return; }
+    insertChip(s,v,c.dataset.chip,c.dataset.col,lastFocus,r);
+  });
+  const cp=app.querySelector("[data-copyprev]"); if(cp) cp.onclick=(()=>{
+    const p=JSON.parse(JSON.stringify(reportsCache[prevKey(cur)].data[s.id]));
+    if(s.type==="list") v.items=p.items||v.items; else v.rows=(p.rows||[]).map(rw=>{ const n={...rw}; s.cols.forEach(c=>{ if(c.t==="date"||c.t==="url") n[c.k]=""; }); return n; });
+    changed(); rerenderSec(r); toast("نُسخت بيانات الشهر السابق، راجعها وعدّل ما يلزم");
+  });
+  app.querySelectorAll("[data-ai]").forEach(b=>b.onclick=()=>runAI(r,s,v,b));
+}
+function fallbackCopy(t){ const ta=document.createElement("textarea"); ta.value=t; document.body.appendChild(ta); ta.select(); try{document.execCommand("copy"); toast("نُسخ التقرير");}catch(e){toast("حدّد النص وانسخه يدوياً");} ta.remove(); }
+function autoGrow(el){ const f=()=>{ el.style.height="auto"; el.style.height=Math.min(el.scrollHeight+2,240)+"px"; }; el.addEventListener("input",f); requestAnimationFrame(f); }
+function rerenderSec(r){ const d=DEPTS[r.dk], s=d.sections.find(x=>x.id===r.sid); const y=window.scrollY; $("#secBody").innerHTML=secBody(d,s); bind(r); window.scrollTo(0,y); paintSave(); }
+function updateTotals(s){ if(!s.total) return; (Array.isArray(s.total)?s.total:[s.total]).forEach(k=>{ const el=$("#tot-"+k); const c=s.cols.find(x=>x.k===k); if(el) el.textContent=fmt(sumCol(curData,s.id,k))+(c.s?" "+c.s:""); }); }
+
+function insertChip(s,v,text,col,focus,r){
+  if(s.type==="list"){
+    let i = focus&&focus.dataset.i!=null&&!String(v.items[+focus.dataset.i]||"").trim()? +focus.dataset.i : v.items.findIndex(x=>!String(x||"").trim());
+    if(i<0){ v.items.push(""); i=v.items.length-1; }
+    v.items[i]=text;
+  } else if(s.type==="checks"){
+    v.other = (v.other? v.other.trim()+"، ":"") + text;
+  } else if(s.type==="table"){
+    let ri;
+    if(focus&&focus.dataset.c===col&&!String(v.rows[+focus.dataset.r][col]||"").trim()) ri=+focus.dataset.r;
+    else ri=v.rows.findIndex(rw=>!rw._fixed&&!String(rw[col]||"").trim()||(rw._fixed&&col!==s.cols[0].k&&!String(rw[col]||"").trim()));
+    if(ri<0){ if(s.fixed&&!s.extra){ toast("كل الخانات معبّأة"); return; } v.rows.push({}); ri=v.rows.length-1; }
+    v.rows[ri][col]=text;
+  }
+  scheduleSave(); rerenderSec(r); paintRail();
+}
+
+/* ================= AI suggestions ================= */
+function compactReport(){
+  const d=DEPTS[cur.dk]; const o={};
+  d.sections.forEach(s=>{ const v=curData[s.id]; if(!v) return;
+    if(s.type==="table") o[s.title]=(v.rows||[]).filter(r=>s.cols.some(c=>String(r[c.k]||"").trim())).map(r=>{const x={}; s.cols.forEach(c=>{ if(r[c.k]) x[c.l]=r[c.k]; }); return x;});
+    else if(s.type==="list") o[s.title]=(v.items||[]).filter(x=>String(x).trim());
+    else if(s.type==="kpis"){ const x={}; s.items.forEach(i=>{ if(v[i.k]) x[i.l]=v[i.k]; }); o[s.title]=x; }
+    else if(s.type==="checks") o[s.title]={sel:v.sel,other:v.other};
+  });
+  return o;
+}
+async function runAI(r,s,v,btn){
+  if(!sample) return;
+  btn.disabled=true; const old=btn.textContent; btn.textContent="جارٍ التفكير…";
+  const out=$("#aiOut");
+  const d=DEPTS[cur.dk];
+  const existing = s.type==="list"? (v.items||[]).filter(x=>String(x).trim()) : (v.rows||[]).filter(rw=>s.cols.some(c=>c.t!=="fixed"&&String(rw[c.k]||"").trim()));
+  const shape = s.type==="list"
+    ? `مصفوفة JSON من 5 نصوص عربية قصيرة (كل نص أقل من 18 كلمة). مثال: ["...","..."]`
+    : `مصفوفة JSON من 4 كائنات، كل كائن بالمفاتيح: ${s.cols.filter(c=>c.t!=="fixed").map(c=>`"${c.k}" (${c.l}${c.o?`، إحدى القيم: ${c.o.join("/")}`:""}${c.t==="number"?"، رقم تقريبي أو اتركه فارغاً":""}${c.t==="date"?"، اتركه فارغاً":""})`).join("، ")}.`;
+  const prompt = `أنت مساعد لكتابة التقارير الشهرية في ${ASSOC_CTX}
+القسم: ${d.name}. الشهر: ${monthName(cur.cal,cur.m)} ${cur.y}.
+المطلوب اقتراحات لمحور «${s.title}» (${s.sub}).
+بيانات التقرير المعبأة حتى الآن:
+${JSON.stringify(compactReport())}
+ما كُتب في هذا المحور: ${JSON.stringify(existing)}
+اكتب اقتراحات واقعية ومختصرة بلغة إدارية عربية سليمة، مرتبطة ببيانات التقرير إن وجدت، ولا تكرر ما كُتب. لا تخترع أرقاماً محددة كأنها حقيقية؛ إن احتجت رقماً فاجعله تقديرياً واضحاً أو اتركه فارغاً.
+أعد فقط: ${shape}`;
+  try{
+    const res = await sample.json(prompt,{modelTier:"default"});
+    const arr = Array.isArray(res)? res : (res && Array.isArray(res.items)? res.items : []);
+    if(!arr.length) throw {code:"empty"};
+    window.__aiSugg = arr;
+    out.innerHTML = `<div class="chips-g"><b>✦ اقتراحات مبنية على تقريرك</b><div class="chips">${arr.map((x,i)=>`<button class="chip ai" data-ai-i="${i}">${esc(typeof x==="string"?x:Object.values(x).filter(Boolean).join(" · "))}</button>`).join("")}</div><div class="ai-note">اضغط الاقتراح لإضافته، ثم راجعه وعدّله.</div></div>`;
+    out.querySelectorAll("[data-ai-i]").forEach(b=>b.onclick=(e)=>{ e.stopPropagation();
+      const x=arr[+b.dataset.aiI];
+      if(s.type==="list"){ insertChip(s,v,String(x),null,null,r); }
+      else { let ri=v.rows.findIndex(rw=>!s.cols.some(c=>c.t!=="fixed"&&String(rw[c.k]||"").trim())); if(ri<0){ v.rows.push({}); ri=v.rows.length-1; }
+        s.cols.forEach(c=>{ if(c.t!=="fixed"&&x[c.k]!=null&&x[c.k]!=="") v.rows[ri][c.k]=String(x[c.k]); }); scheduleSave(); rerenderSec(r); paintRail(); }
+    });
+    out.scrollIntoView({block:"nearest",behavior:"smooth"});
+  }catch(e){
+    const msg = e&&e.code==="not_granted"? "لم يُسمح باستخدام الاقتراحات الذكية لهذه الصفحة." : e&&e.code==="rate_limited"? "طلبات كثيرة، حاول بعد دقيقة." : "تعذّر توليد الاقتراحات الآن، استخدم الاقتراحات الجاهزة.";
+    out.innerHTML=`<div class="ai-note">${msg}</div>`;
+    if(e&&e.code==="not_granted"){ sample=null; }
+  }
+  btn.disabled=false; btn.textContent=old;
+}
+
+render();
+setTimeout(initCaps,0);
+})();
+</script>
+
+</body>
+</html>
