@@ -265,6 +265,18 @@ tr.total td{background:var(--sunk);font-weight:700;padding:11px 8px}
 .pp-foot{position:absolute;bottom:18px;left:30px;right:30px;display:flex;justify-content:space-between;font-size:10px;color:#8a7c6d;border-top:1px solid var(--pl);padding-top:6px}
 @page{size:A4;margin:0}
 @media print{ body > *:not(.pp-host){display:none!important} .pp-host{position:static;z-index:auto} .pp{break-after:page;-webkit-print-color-adjust:exact;print-color-adjust:exact} .pp:last-child{break-after:auto} }
+.pp-in{padding-bottom:16px}
+.pp-in > .pp-foot{position:static;margin-top:auto;padding-top:6px}
+.pp.compact .pp-in{padding:18px 20px 12px;gap:7px}
+.pp.compact .pp-head{padding:8px 14px}
+.pp.compact .pp-sb{padding:5px 8px}
+.pp.compact .pp-sh{padding:3px 10px}
+.pp.compact td{height:auto;padding:2px 6px;font-size:11px}
+.pp.compact th{padding:3px 6px}
+.pp.compact ol{display:grid;grid-template-columns:1fr 1fr;gap:2px 16px}
+.pp.compact ol li{min-height:0}
+.pp.compact .pp-kpi div{min-height:0}
+.pp.compact .pp-sig div{line-height:1.8;padding:5px 12px}
 .pdf-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:0 0 14px}
 .pdf-msg{font-size:13px;color:var(--muted)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
@@ -719,58 +731,76 @@ function reportText(dk){
 }
 
 
-/* ================= PDF (A4) ================= */
+/* ================= PDF (A4, one page, filled items only) ================= */
+const filled = x => String(x==null?"":x).trim()!=="";
 function ppBlocks(dk){
   const d=DEPTS[dk], out=[];
   const val=(x)=>esc(x==null?"":x);
+  let n=0;
+  const sec=(title,body)=>{ n++; out.push(`<div class="pp-sec"><div class="pp-sh"><b>${n}</b>${title}</div><div class="pp-sb">${body}</div></div>`); };
   d.sections.forEach(s=>{
     const v=curData[s.id]||{};
-    let b="";
-    if(s.type==="basics") b=`<div class="pp-kv"><span>الشهر: <b>${monthName(cur.cal,cur.m)}</b></span><span>العام: <b>${cur.y}${cur.cal==="h"?"هـ":"م"}</b></span><span>معد التقرير: <b>${val(v.preparer)}</b></span><span>تاريخ رفع التقرير: <b>${val(v.submitted)}</b></span></div>`;
-    else if(s.type==="kpis") b=`<div class="pp-kpis">${s.items.map(i=>{ const x=v[i.k]; const t=(x!==undefined&&x!=="")?(i.u==="٪"?x+"٪":fmt(num(x))):"&nbsp;"; return `<div class="pp-kpi"><div>${i.l}${i.u!=="٪"&&i.u!=="ريال"?"":` (${i.u})`}</div><b>${t}</b></div>`; }).join("")}</div>`;
-    else if(s.type==="table"){
-      let rows=(v.rows||[]).filter(r=>r._fixed||s.cols.some(c=>String(r[c.k]||"").trim()));
-      if(!rows.length && s.fixed) rows=s.fixed.map(n=>({[s.cols[0].k]:n,_fixed:true}));
-      const min = s.fixed? rows.length : Math.max(rows.length, 3);
-      while(rows.length<min) rows.push({});
+    if(s.type==="basics"){
+      const kv=[`<span>الشهر: <b>${monthName(cur.cal,cur.m)}</b></span>`,`<span>العام: <b>${cur.y}${cur.cal==="h"?"هـ":"م"}</b></span>`];
+      if(filled(v.preparer)) kv.push(`<span>معد التقرير: <b>${val(v.preparer)}</b></span>`);
+      if(filled(v.submitted)) kv.push(`<span>تاريخ رفع التقرير: <b>${val(v.submitted)}</b></span>`);
+      sec(s.title,`<div class="pp-kv">${kv.join("")}</div>`); return;
+    }
+    if(s.type==="kpis"){
+      const it=s.items.filter(i=>filled(v[i.k])); if(!it.length) return;
+      sec(s.title,`<div class="pp-kpis">${it.map(i=>`<div class="pp-kpi"><div>${i.l}${i.u==="ريال"?" (ريال)":""}</div><b>${i.u==="٪"?esc(v[i.k])+"٪":fmt(num(v[i.k]))}</b></div>`).join("")}</div>`); return;
+    }
+    if(s.type==="table"){
+      const dataCols=s.cols.filter(c=>c.t!=="fixed");
+      const rows=(v.rows||[]).filter(r=>r && dataCols.some(c=>filled(r[c.k])) || (r && !r._fixed && filled(r[s.cols[0].k])));
+      if(!rows.length) return;
+      const cols=s.cols.filter(c=>c.t==="fixed"||rows.some(r=>filled(r[c.k])));
       const tot=s.total?(Array.isArray(s.total)?s.total:[s.total]):[];
-      b=`<table><tr><th style="width:26px">م</th>${s.cols.map(c=>`<th>${c.l}${c.s?` (${c.s})`:""}</th>`).join("")}</tr>
-        ${rows.map((r,i)=>`<tr><td class="m">${i+1}</td>${s.cols.map(c=>`<td>${c.t==="number"&&r[c.k]?fmt(num(r[c.k])):val(r[c.k])}</td>`).join("")}</tr>`).join("")}
-        ${tot.length?`<tr class="t"><td></td>${s.cols.map(c=>tot.includes(c.k)?`<td>${fmt(sumCol(curData,s.id,c.k))}</td>`:(c.t==="fixed"?"<td>الإجمالي</td>":"<td></td>")).join("")}</tr>`:""}</table>`;
+      const showTot=tot.length && rows.length>1;
+      sec(s.title,`<table><tr><th style="width:26px">م</th>${cols.map(c=>`<th>${c.l}${c.s?` (${c.s})`:""}</th>`).join("")}</tr>
+        ${rows.map((r,i)=>`<tr><td class="m">${i+1}</td>${cols.map(c=>`<td>${c.t==="number"&&filled(r[c.k])?fmt(num(r[c.k])):val(r[c.k])}</td>`).join("")}</tr>`).join("")}
+        ${showTot?`<tr class="t"><td></td>${cols.map(c=>tot.includes(c.k)?`<td>${fmt(sumCol(curData,s.id,c.k))}</td>`:(c===cols[0]?"<td>الإجمالي</td>":"<td></td>")).join("")}</tr>`:""}</table>`); return;
     }
-    else if(s.type==="list"){ const it=(v.items||[]).filter(x=>String(x).trim()); while(it.length<Math.min(s.rows,4)) it.push(""); b=`<ol>${it.map((x,i)=>`<li><i>${i+1}</i><span>${val(x)}</span></li>`).join("")}</ol>`; }
-    else if(s.type==="checks"){ const sel=v.sel||[]; b=`<div class="pp-chks">${s.opts.map(o=>`<span><em>${sel.includes(o)?"✓":""}</em>${o}</span>`).join("")}</div>${v.other?`<div style="margin-top:6px">أخرى / تفاصيل: ${val(v.other)}</div>`:""}`; }
-    else if(s.type==="approve"){
+    if(s.type==="list"){
+      const it=(v.items||[]).filter(filled); if(!it.length) return;
+      sec(s.title,`<ol>${it.map((x,i)=>`<li><i>${i+1}</i><span>${val(x)}</span></li>`).join("")}</ol>`); return;
+    }
+    if(s.type==="checks"){
+      const sel=v.sel||[]; if(!sel.length && !filled(v.other)) return;
+      sec(s.title,`${sel.length?`<div class="pp-chks">${sel.map(o=>`<span><em>✓</em>${esc(o)}</span>`).join("")}</div>`:""}${filled(v.other)?`<div style="margin-top:4px">التفاصيل: ${val(v.other)}</div>`:""}`); return;
+    }
+    if(s.type==="approve"){
       out.push(`<div class="pp-sig"><div><b>${s.mgr}</b>الاسم: ${val(v.mgr)||"................................"}<br>التوقيع: ................................<br>التاريخ: ${val(v.mgrDate)||"................................"}</div><div><b>اعتماد المدير التنفيذي</b>الاسم: ${val(v.exec)||"................................"}<br>التوقيع: ................................<br>التاريخ: ${val(v.execDate)||"................................"}</div></div>`);
-      return;
     }
-    out.push(`<div class="pp-sec"><div class="pp-sh"><b>${s.id}</b>${s.title}</div><div class="pp-sb">${b}</div></div>`);
   });
   return out;
 }
 function ppHead(d){
   return `<div class="pp-head"><div class="pp-logo"><img src="${LOGO}" alt="ترتيل"><small>جمعية تحفيظ القرآن الكريم بخليص<br>بالقرآن .. نبني الأجيال</small></div>
-    <div class="pp-title"><h1>التقرير الشهري</h1><span class="tag">${d.name}</span><div>${d.slogan}</div></div>
+    <div class="pp-title"><h1>التقرير الشهري</h1><span class="tag">${d.name}</span><div>${d.slogan} · ${monthName(cur.cal,cur.m)} ${cur.y}${cur.cal==="h"?"هـ":"م"}</div></div>
     <div class="pp-verse">﴿${d.verse}﴾<small>[${d.ref}]</small></div></div>`;
 }
-function buildPages(dk){
+/* Builds ONE A4 sheet. If the content is taller than A4, the sheet is laid out
+   wider (same A4 proportions) and then scaled down, so everything fits one page. */
+function buildPage(dk, forPrint){
   const d=DEPTS[dk];
   const host=document.createElement("div"); host.className="pp-host"; host.setAttribute("dir","rtl"); document.body.appendChild(host);
-  const blocks=ppBlocks(dk);
-  const pages=[];
-  const newPage=(first)=>{ const pg=document.createElement("div"); pg.className="pp "+(d.dept==="media"?"media":"");
-    pg.innerHTML=`<div class="pp-in">${first?ppHead(d):""}</div><div class="pp-foot"><span>${ASSOC} · مصرحة برقم (3362)</span><span class="pn"></span></div>`;
-    host.appendChild(pg); pages.push(pg); return pg.querySelector(".pp-in"); };
-  let inner=newPage(true);
-  const limit=1123-54; // page height minus bottom padding (footer area)
-  blocks.forEach(html=>{
-    const tmp=document.createElement("div"); tmp.innerHTML=html; const el=tmp.firstElementChild;
-    inner.appendChild(el);
-    const pg=inner.parentElement;
-    if(el.offsetTop+el.offsetHeight>limit && inner.children.length>1){ inner.removeChild(el); inner=newPage(false); inner.appendChild(el); }
-  });
-  pages.forEach((p,i)=>p.querySelector(".pn").textContent=`صفحة ${i+1} من ${pages.length}`);
-  return {host,pages};
+  const pg=document.createElement("div"); pg.className="pp "+(d.dept==="media"?"media":"");
+  pg.innerHTML=`<div class="pp-in">${ppHead(d)}${ppBlocks(dk).join("")}<div class="pp-foot"><span>${ASSOC} · مصرحة برقم (3362)</span><span>${todayISO()}</span></div></div>`;
+  host.appendChild(pg);
+  const inner=pg.querySelector(".pp-in"), foot=inner.querySelector(".pp-foot");
+  // natural height: footer top (it sits at the bottom via margin-top:auto) is measured without that gap
+  const need=()=>{ foot.style.marginTop="0"; const h=foot.offsetTop+foot.offsetHeight+parseFloat(getComputedStyle(inner).paddingBottom)+4; foot.style.marginTop=""; return h; };
+  let W=794, H=1123;
+  pg.style.width=W+"px"; pg.style.height=H+"px";
+  if(need()>H) pg.classList.add("compact");
+  for(let i=0;i<12;i++){
+    pg.style.width=W+"px"; H=Math.round(1123*W/794); pg.style.height=H+"px";
+    const h=need(); if(h<=H*0.98) break;
+    W=Math.ceil(W*Math.max(1.03,Math.sqrt(h/H)));
+  }
+  if(forPrint && W>794) pg.style.zoom=(794/W);
+  return {host,page:pg,W,H};
 }
 async function makePDF(dk,btn){
   const msg=$("#pdfMsg");
@@ -779,17 +809,14 @@ async function makePDF(dk,btn){
   let host;
   try{
     try{ await document.fonts.ready; }catch(e){}
-    const built=buildPages(dk); host=built.host;
+    const b=buildPage(dk,false); host=b.host;
+    const c=await window.html2canvas(b.page,{scale:Math.max(1.4,1588/b.W),backgroundColor:"#ffffff",logging:false,width:b.W,height:b.H,windowWidth:b.W,scrollX:0,scrollY:0});
     const pdf=new window.jspdf.jsPDF({unit:"pt",format:"a4",orientation:"portrait",compress:true});
-    for(let i=0;i<built.pages.length;i++){
-      const c=await window.html2canvas(built.pages[i],{scale:2,backgroundColor:"#ffffff",logging:false,width:794,height:1123,windowWidth:794,scrollX:0,scrollY:0});
-      if(i) pdf.addPage();
-      pdf.addImage(c.toDataURL("image/jpeg",0.92),"JPEG",0,0,595.28,841.89);
-    }
+    pdf.addImage(c.toDataURL("image/jpeg",0.92),"JPEG",0,0,595.28,841.89);
     const d=DEPTS[dk];
     const name=`التقرير الشهري - ${d.short} - ${monthName(cur.cal,cur.m)} ${cur.y}.pdf`;
     host.remove(); host=null;
-    pdf.save(name);
+    await savePdf(pdf,name);
     msg.textContent="تم تحميل الملف.";
   }catch(e){
     const c=e&&e.code;
@@ -798,6 +825,7 @@ async function makePDF(dk,btn){
   if(host) host.remove();
   btn.disabled=false; btn.textContent=old;
 }
+async function savePdf(pdf,name){ pdf.save(name); }
 
 /* ================= Events ================= */
 function bind(r){
@@ -820,7 +848,7 @@ function bind(r){
   }
   if(r.page==="view"){
     $("#pdfRep").onclick=()=>makePDF(r.dk,$("#pdfRep"));
-    $("#printRep").onclick=async()=>{ try{ await document.fonts.ready; }catch(e){} const b=buildPages(r.dk); b.host.classList.add("printing");
+    $("#printRep").onclick=async()=>{ try{ await document.fonts.ready; }catch(e){} const b=buildPage(r.dk,true);
       const done=()=>{ b.host.remove(); window.removeEventListener("afterprint",done); }; window.addEventListener("afterprint",done); setTimeout(()=>window.print(),150); };
     $("#copyRep").onclick=()=>{ const t=reportText(r.dk);
       navigator.clipboard?.writeText(t).then(()=>toast("نُسخ التقرير"),()=>fallbackCopy(t)) ?? fallbackCopy(t); };
