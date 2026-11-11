@@ -277,6 +277,16 @@ tr.total td{background:var(--sunk);font-weight:700;padding:11px 8px}
 .pp.compact ol li{min-height:0}
 .pp.compact .pp-kpi div{min-height:0}
 .pp.compact .pp-sig div{line-height:1.8;padding:5px 12px}
+.up-card{margin-top:12px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;display:grid;gap:8px;font-size:14px}
+.up-nums{display:flex;flex-wrap:wrap;gap:10px}
+.up-nums span{flex:1 1 110px;background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:12.5px;color:var(--muted)}
+.up-nums b{display:block;font-size:18px;color:var(--ink)}
+.up-note{font-size:13px;color:var(--muted)}
+.up-warn{color:var(--warn)}
+.up-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:14px;padding:12px;border:1px dashed var(--accent);border-radius:12px;background:var(--accent-soft)}
+.up-row b{font-size:14px;color:var(--accent)}
+.up-row select{width:auto;min-width:150px}
+.up-row small{flex-basis:100%;color:var(--muted);font-size:12.5px}
 .pdf-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:0 0 14px}
 .pdf-msg{font-size:13px;color:var(--muted)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
@@ -287,6 +297,7 @@ tr.total td{background:var(--sunk);font-weight:700;padding:11px 8px}
 <div id="app" dir="rtl" lang="ar"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
 <script>
 (() => {
@@ -311,7 +322,7 @@ const DEPTS = {
    {id:"2", type:"kpis", title:"مؤشرات تنمية الموارد لهذا الشهر", sub:"الأرقام الرئيسية للشهر. زر الاقتراح يحسب القيمة من الجداول التي عبّأتها.",
     items:[
      {k:"target", l:"المستهدف الشهري", u:"ريال", h:"مبلغ الهدف المعتمد في الخطة لهذا الشهر"},
-     {k:"pct", l:"نسبة تحقيق الهدف الشهري", u:"٪", h:"إجمالي التبرعات ÷ المستهدف × 100", calc:d=>{const t=num(g(d,"2.target")), s=revTotal(d); return t>0&&s>0? Math.round(s/t*100):null}},
+     {k:"pct", l:"نسبة تحقيق الهدف الشهري", u:"٪", auto:true, h:"تُحسب تلقائياً: إجمالي مبلغ التبرعات ÷ المستهدف × 100", calc:d=>{const t=num(g(d,"2.target")), s=num(g(d,"2.total"))||revTotal(d); return t>0&&s>0? Math.round(s/t*1000)/10:null}},
      {k:"inits", l:"عدد المبادرات المقدمة", u:"مبادرة", h:"من جدول المبادرات (القسم 3)", calc:d=>countRows(d,"3","name")||null},
      {k:"opps", l:"عدد الفرص التمويلية", u:"فرصة", h:"المبادرات التي لها قيمة مالية", calc:d=>(g(d,"3.rows")||[]).filter(r=>num(r.value)>0).length||null},
      {k:"donors", l:"عدد المتبرعين الجدد", u:"متبرع", h:"من سجل المتبرعين أو منصة التبرع"},
@@ -369,9 +380,9 @@ const DEPTS = {
            target:["المجتمع المحلي بخليص","الداعمون والمانحون","أولياء الأمور","الطلاب والمعلمون","عموم المتابعين"],
            result:["وصول أكثر من 10 آلاف مشاهدة","زيادة المتابعين","تفاعل واسع من المجتمع","دعم مالي ناتج عن الحملة","نشر في حسابات جهات رسمية"]},
     ai:true, tips:["قدّم الأعمال الأكثر أثراً.","اكتب النتيجة برقم إن أمكن."]},
-   {id:"4", type:"table", title:"المنصات الإعلامية", sub:"أداء كل منصة خلال الشهر. يمكنك إضافة منصات أخرى.", fixed:["تويتر (X)","الموقع الإلكتروني","تيك توك"], extra:true, total:["posts","views","inter"],
+   {id:"4", type:"table", title:"المنصات الإعلامية", sub:"أداء كل منصة خلال الشهر. يمكنك إضافة منصات أخرى.", fixed:["تويتر (X)","الموقع الإلكتروني","تيك توك","سناب شات"], extra:true, upload:true, total:["posts","views","inter"],
     cols:[{k:"platform",l:"المنصة",t:"fixed"},{k:"posts",l:"عدد المنشورات",t:"number"},{k:"views",l:"عدد المشاهدات",t:"number"},{k:"inter",l:"التفاعل",t:"number"},{k:"notes",l:"ملاحظات"}],
-    chips:{platform:["سناب شات","إنستقرام","يوتيوب","واتساب (القناة)","تيليجرام"],
+    chips:{platform:["إنستقرام","يوتيوب","واتساب (القناة)","تيليجرام"],
            notes:["أعلى منصة تفاعلاً","انخفاض بسبب قلة النشر","نمو ملحوظ في المتابعين","تحديث صفحة الأخبار","مقطع حقق انتشاراً"]},
     tips:["الأرقام من لوحة إحصاءات كل منصة لنفس الشهر.","التفاعل = الإعجابات والتعليقات والمشاركات."]},
    {id:"5", type:"table", title:"التغطيات الإعلامية", sub:"الفعاليات التي غطاها القسم، ونوع التغطية ورابطها.", rows:4,
@@ -619,16 +630,17 @@ function secBody(d,s){
   if(s.type==="kpis"){
     return `<div class="kpis">${s.items.map(i=>`<div class="kpi">
       <div class="k-l">${i.l}</div>
-      <input class="inp num" inputmode="decimal" id="k-${i.k}" data-f="${i.k}" value="${esc(v[i.k])}" placeholder="—">
+      <input class="inp num" inputmode="decimal" id="k-${i.k}" data-f="${i.k}" value="${esc(v[i.k])}" placeholder="—"${i.auto?" readonly tabindex=\"-1\" style=\"background:var(--sunk)\"":""}>
       <div class="unit">${i.u}</div>
       <div class="k-h">${i.h}</div>
-      ${i.calc?`<button class="sugg-btn" data-calc="${i.k}">اقتراح من البيانات</button>`:""}
+      ${i.calc&&!i.auto?`<button class="sugg-btn" data-calc="${i.k}">اقتراح من البيانات</button>`:""}
     </div>`).join("")}</div>`;
   }
   if(s.type==="table"){
     if(!v.rows){
       v.rows = s.fixed? s.fixed.map(n=>({[s.cols[0].k]:n,_fixed:true})) : Array.from({length:s.rows},()=>({}));
     }
+    if(s.fixed){ s.fixed.forEach((n,i)=>{ if(!v.rows.some(rw=>rw._fixed&&rw[s.cols[0].k]===n)){ const at=v.rows.filter(rw=>rw._fixed).length; v.rows.splice(at,0,{[s.cols[0].k]:n,_fixed:true}); } }); }
     const totals = s.total? (Array.isArray(s.total)?s.total:[s.total]) : [];
     const head=`<tr><th style="width:38px">م</th>${s.cols.map(c=>`<th>${c.l}${c.s?`<small>${c.s}</small>`:""}</th>`).join("")}<th style="width:34px"></th></tr>`;
     const body=v.rows.map((r,ri)=>`<tr><td class="m num">${ri+1}</td>${s.cols.map(c=>{
@@ -642,7 +654,8 @@ function secBody(d,s){
       }).join("")}<td>${r._fixed?"":`<button class="del" data-del="${ri}" title="حذف السطر" aria-label="حذف السطر">×</button>`}</td></tr>`).join("");
     const tot = totals.length? `<tr class="total"><td></td>${s.cols.map(c=>totals.includes(c.k)?`<td class="num" id="tot-${c.k}">${fmt(sumCol(curData,s.id,c.k))}${c.s?" "+c.s:""}</td>`:(c.t==="fixed"?`<td>الإجمالي</td>`:`<td></td>`)).join("")}<td></td></tr>`:"";
     return `<div class="tbl-wrap"><table><thead>${head}</thead><tbody>${body}${tot}</tbody></table></div>
-      <div class="tools">${(!s.fixed||s.extra)?`<button class="btn" id="addRow">+ إضافة سطر</button>`:""}${s.ai&&sample?`<button class="btn ai" data-ai="1">✦ اقترح لي صفوفاً مناسبة</button>`:""}</div>`;
+      <div class="tools">${(!s.fixed||s.extra)?`<button class="btn" id="addRow">+ إضافة سطر</button>`:""}${s.ai&&sample?`<button class="btn ai" data-ai="1">✦ اقترح لي صفوفاً مناسبة</button>`:""}</div>
+      ${s.upload?`<div class="up-row"><b>رفع إحصائيات منصة</b><select class="inp" id="upPlat">${v.rows.map((rw,i)=>String(rw[s.cols[0].k]||"").trim()?`<option value="${i}">${esc(rw[s.cols[0].k])}</option>`:"").join("")}</select><label class="btn pri" for="upFile" style="cursor:pointer">اختر ملفاً أو صورة</label><input type="file" id="upFile" multiple accept=".csv,.xlsx,.xls,image/*" hidden><small>${sample?"ارفع ملف التصدير (CSV أو Excel) أو صور شاشة الإحصائيات، وأستخرج الأرقام لشهر التقرير.":"ارفع ملف التصدير (CSV أو Excel) من لوحة إحصاءات المنصة، وتُستخرج أرقام شهر التقرير تلقائياً."}</small></div><div id="upOut"></div>`:""}`;
   }
   if(s.type==="list"){
     if(!v.items) v.items=Array.from({length:s.rows},()=>"");
@@ -827,6 +840,111 @@ async function makePDF(dk,btn){
 }
 async function savePdf(pdf,name){ pdf.save(name); }
 
+/* ================= Platform stats upload ================= */
+const KW = {
+  date:["date","time","day","تاريخ","اليوم","التاريخ"],
+  views:["video views","views","impressions","story views","spotlight views","total views","مشاهدات","المشاهدات","مرات الظهور","الظهور","مشاهدة"],
+  posts:["create post","posts created","posts","tweets","videos published","منشورات","المنشورات"],
+  eng:["engagements","engagement","interactions","total engagement","تفاعلات","التفاعل","التفاعلات"],
+  likes:["likes","like","إعجابات","الإعجابات"],
+  comments:["comments","replies","تعليقات","الردود","التعليقات"],
+  shares:["shares","reposts","retweets","مشاركات","إعادة نشر","المشاركات"],
+  id:["post id","tweet id","video id","id","link","permalink","post link","text","title","المعرف","الرابط","النص"],
+  followers:["followers","subscribers","المتابعين","المتابعون","المشتركين"]
+};
+function colOf(head,key){
+  const h=head.map(x=>String(x||"").toLowerCase().trim());
+  for(const k of KW[key]){ const i=h.findIndex(x=>x===k); if(i>=0) return i; }
+  for(const k of KW[key]){ const i=h.findIndex(x=>x.includes(k)); if(i>=0) return i; }
+  return -1;
+}
+function parseDateCell(x){
+  if(x==null||x==="") return null;
+  if(typeof x==="number" && x>20000 && x<80000) return new Date(Math.round((x-25569)*86400000));
+  const s=String(x).trim(); let d=new Date(s);
+  if(isNaN(d)){ const m=s.match(/(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})/); if(m) d=new Date(+m[3],+m[2]-1,+m[1]); }
+  return isNaN(d)?null:d;
+}
+function monthRange(){
+  if(cur.cal==="g") return [new Date(cur.y,cur.m-1,1), new Date(cur.y,cur.m,0,23,59,59)];
+  const f=new Intl.DateTimeFormat("en-u-ca-islamic-umalqura-nu-latn",{year:"numeric",month:"numeric",day:"numeric"});
+  let a=null,b=null; const t=new Date(); t.setHours(12);
+  for(let i=-500;i<120;i++){ const d=new Date(t.getTime()+i*86400000); const p=f.formatToParts(d);
+    const y=+p.find(z=>z.type==="year").value, m=+p.find(z=>z.type==="month").value;
+    if(y===cur.y&&m===cur.m){ if(!a) a=new Date(d.getFullYear(),d.getMonth(),d.getDate()); b=new Date(d.getFullYear(),d.getMonth(),d.getDate(),23,59,59); } }
+  return a?[a,b]:null;
+}
+const dstr=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+function analyzeTable(rows){
+  let hi=-1;
+  for(let i=0;i<Math.min(rows.length,15);i++){ const r=rows[i]||[]; const hits=["views","posts","eng","likes","date"].filter(k=>colOf(r,k)>=0).length; if(hits>=2){hi=i;break;} }
+  if(hi<0) return {err:"لم أتعرف على أعمدة الملف. تأكد أنه ملف التصدير من لوحة إحصاءات المنصة (CSV أو Excel)."};
+  const head=rows[hi], body=rows.slice(hi+1).filter(r=>r&&r.some(c=>c!==""&&c!=null));
+  const c={}; Object.keys(KW).forEach(k=>c[k]=colOf(head,k));
+  let used=body, period="";
+  if(c.date>=0){
+    const rg=monthRange();
+    if(rg){ const inM=body.filter(r=>{const d=parseDateCell(r[c.date]); return d&&d>=rg[0]&&d<=rg[1];});
+      const dated=body.filter(r=>parseDateCell(r[c.date]));
+      if(dated.length){ used=inM; period=`من ${dstr(rg[0])} إلى ${dstr(rg[1])}`;
+        const ds=dated.map(r=>parseDateCell(r[c.date])); const mn=new Date(Math.min(...ds)), mx=new Date(Math.max(...ds));
+        if(!inM.length) return {err:`الملف يغطي الفترة ${dstr(mn)} إلى ${dstr(mx)}، ولا يحتوي على أيام من شهر التقرير.`};
+        if(mn>rg[0]||mx<new Date(rg[1].getTime()-86400000)) period+=` (الملف يغطي ${dstr(mn)} إلى ${dstr(mx)} فقط)`; } }
+  }
+  const sum=k=>c[k]>=0? used.reduce((a,r)=>a+num(r[c[k]]),0):null;
+  // several "views" columns may exist (impressions, video views…): take the one with the largest total
+  const vcols=head.map((x,i)=>i).filter(i=>{ const h=String(head[i]||"").toLowerCase(); return KW.views.some(k=>h.includes(k)); });
+  const views=vcols.length? Math.max(...vcols.map(i=>used.reduce((a,r)=>a+num(r[i]),0))) : null;
+  let inter=sum("eng"); if(inter==null||inter===0){ const p=["likes","comments","shares"].map(sum).filter(x=>x!=null); inter=p.length?p.reduce((a,b)=>a+b,0):null; }
+  let posts=sum("posts"); if((posts==null||posts===0) && c.id>=0) posts=used.length;
+  return {posts:posts||null, views:views||null, inter:inter||null, period, rows:used.length};
+}
+async function readTableFile(file){
+  if(/\.csv$|text\/csv/i.test(file.name+file.type) && !window.XLSX){
+    const t=await file.text(); const sep=(t.split("\n")[0].match(/;/g)||[]).length>(t.split("\n")[0].match(/,/g)||[]).length?";":",";
+    return t.split(/\r?\n/).map(l=>{ const out=[]; let cur2="",q=false; for(const ch of l){ if(ch==='"'){q=!q;continue;} if(ch===sep&&!q){out.push(cur2);cur2="";} else cur2+=ch; } out.push(cur2); return out; });
+  }
+  if(!window.XLSX) throw {msg:"تعذّر تحميل أداة قراءة ملفات Excel، تحقق من الاتصال."};
+  const wb=window.XLSX.read(await file.arrayBuffer(),{type:"array",cellDates:false});
+  return window.XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,raw:true,defval:""});
+}
+async function readImages(files,platform){
+  if(!sample) throw {msg:"قراءة صور الإحصائيات تعمل في نسخة المنصة داخل Claude. هنا ارفع ملف CSV أو Excel، أو أرسل الصورة لـ Claude في المحادثة."};
+  let lim=null; try{ lim=await sample.limits(); }catch(e){}
+  if(!lim||!lim.images) throw {msg:"قراءة الصور غير متاحة في هذا العرض. ارفع ملف CSV أو Excel بدلاً منها."};
+  const imgs=files.slice(0,(lim.images.maxCount||4));
+  const prompt=`هذه صور من لوحة إحصائيات منصة «${platform}» لحساب جمعية تحفيظ قرآن. المطلوب أرقام شهر التقرير: ${monthName(cur.cal,cur.m)} ${cur.y}${cur.cal==="h"?"هـ":"م"}.
+استخرج من الصور فقط (لا تخمّن): عدد المنشورات/المحتوى، عدد المشاهدات (أو مرات الظهور)، عدد التفاعلات (إعجاب+تعليق+مشاركة، أو إجمالي التفاعل إن ظهر)، عدد المتابعين.
+واذكر الفترة الزمنية الظاهرة في الصورة كما هي (مثل: آخر 28 يوماً، أو من تاريخ إلى تاريخ).
+أعد JSON فقط بالشكل: {"posts":رقم أو null,"views":رقم أو null,"inter":رقم أو null,"followers":رقم أو null,"period":"نص","matchesMonth":true أو false,"note":"ملاحظة قصيرة بالعربية"}`;
+  const r=await sample.json(prompt,{images:imgs,modelTier:"default"});
+  return {posts:r.posts||null,views:r.views||null,inter:r.inter||null,followers:r.followers||null,period:r.period||"",warn:r.matchesMonth===false,note:r.note||""};
+}
+async function handleUpload(r,s,v,files){
+  const out=$("#upOut"); const ri=+$("#upPlat").value; const plat=v.rows[ri][s.cols[0].k]||"المنصة";
+  out.innerHTML=`<div class="up-card">جارٍ قراءة ${files.length>1?"الملفات":"الملف"}…</div>`;
+  try{
+    const imgs=files.filter(f=>/^image\//.test(f.type)), tabs=files.filter(f=>!/^image\//.test(f.type));
+    let res;
+    if(tabs.length){ res=analyzeTable(await readTableFile(tabs[0])); if(res.err) throw {msg:res.err}; }
+    else res=await readImages(imgs,plat);
+    const f=x=>x==null?"—":fmt(x);
+    if(res.posts==null&&res.views==null&&res.inter==null) throw {msg:"لم أجد أرقام منشورات أو مشاهدات أو تفاعل في الملف."};
+    out.innerHTML=`<div class="up-card"><b>${esc(plat)}</b>
+      <div class="up-nums"><span>المنشورات<b>${f(res.posts)}</b></span><span>المشاهدات<b>${f(res.views)}</b></span><span>التفاعل<b>${f(res.inter)}</b></span>${res.followers!=null?`<span>المتابعون<b>${f(res.followers)}</b></span>`:""}</div>
+      ${res.period?`<div class="up-note">الفترة: ${esc(res.period)}</div>`:""}
+      ${res.warn?`<div class="up-warn">تنبيه: الفترة في الصورة لا تطابق شهر التقرير. راجع الأرقام قبل اعتمادها.</div>`:""}
+      ${res.note?`<div class="up-note">${esc(res.note)}</div>`:""}
+      <div class="tools"><button class="btn pri" id="upApply">تعبئة في صف ${esc(plat)}</button><button class="btn" id="upCancel">إلغاء</button></div></div>`;
+    $("#upCancel").onclick=()=>{ out.innerHTML=""; };
+    $("#upApply").onclick=()=>{ const row=v.rows[ri];
+      if(res.posts!=null) row.posts=String(res.posts); if(res.views!=null) row.views=String(res.views); if(res.inter!=null) row.inter=String(res.inter);
+      scheduleSave(); rerenderSec(r); paintRail(); toast("عُبّئت أرقام "+plat); };
+  }catch(e){
+    out.innerHTML=`<div class="up-card up-warn">${esc(e&&e.msg||"تعذّرت قراءة الملف.")}</div>`;
+  }
+}
+
 /* ================= Events ================= */
 function bind(r){
   app.querySelectorAll("[data-open]").forEach(b=>b.onclick=()=>{ const p=parseKey(b.dataset.open); openReport(p.dk,p.cal,p.y,p.m); location.hash=`${p.dk}-${b.dataset.to}`; });
@@ -858,7 +976,10 @@ function bind(r){
   const s=DEPTS[r.dk].sections.find(x=>x.id===r.sid); const v=curData[s.id];
   const changed=()=>{ scheduleSave(); paintRail(); };
 
-  app.querySelectorAll("#secBody [data-f]").forEach(el=>el.addEventListener("input",()=>{ v[el.dataset.f]=el.value; changed(); }));
+  const autoK=()=>{ if(s.type!=="kpis") return; s.items.filter(i=>i.auto).forEach(i=>{ const x=i.calc(curData); const nv=x==null?"":String(x); if((v[i.k]||"")!==nv){ v[i.k]=nv; const el=$("#k-"+i.k); if(el) el.value=nv; scheduleSave(); } }); };
+  app.querySelectorAll("#secBody [data-f]").forEach(el=>el.addEventListener("input",()=>{ v[el.dataset.f]=el.value; autoK(); changed(); }));
+  autoK();
+  const upF=$("#upFile"); if(upF) upF.onchange=e=>{ const fs=[...e.target.files]; e.target.value=""; if(fs.length) handleUpload(r,s,v,fs); };
   app.querySelectorAll("#secBody [data-r]").forEach(el=>{
     const ev=el.tagName==="SELECT"?"change":"input";
     el.addEventListener(ev,()=>{ v.rows[+el.dataset.r][el.dataset.c]=el.value; updateTotals(s); changed(); });
